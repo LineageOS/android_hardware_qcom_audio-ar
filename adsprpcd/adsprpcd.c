@@ -32,13 +32,14 @@
 #endif
 
 #define VERIFY_PRINT_INFO 0
+#define VERIFY_EPRINTF ALOGE
+#define VERIFY_IPRINTF ALOGI
 
 #include <stdio.h>
 #include <dlfcn.h>
 #include <unistd.h>
-#include "verify.h"
-#include "AEEStdErr.h"
 
+#include <log/log.h>
 
 #ifndef ADSP_DEFAULT_LISTENER_NAME
 #define ADSP_DEFAULT_LISTENER_NAME "libadsp_default_listener.so"
@@ -46,6 +47,8 @@
 #ifndef ADSP_LIBHIDL_NAME
 #define ADSP_LIBHIDL_NAME "libhidlbase.so"
 #endif
+
+#define AEE_ECONNREFUSED 0x72
 
 typedef int (*adsp_default_listener_start_t)(int argc, char *argv[]);
 
