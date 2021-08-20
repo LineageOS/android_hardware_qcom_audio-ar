@@ -3,6 +3,16 @@ LOCAL_PATH := $(call my-dir)
 LOCAL_AUDIO_SERVICE_64 := taro parrot bengal holi blair
 
 include $(CLEAR_VARS)
+
+LOCAL_MODULE := libaudio_hal_headers
+LOCAL_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)/inc
+
+LOCAL_VENDOR_MODULE := true
+
+include $(BUILD_HEADER_LIBRARY)
+
+include $(CLEAR_VARS)
+
 ifeq ($(call is-board-platform-in-list,$(LOCAL_AUDIO_SERVICE_64)), true)
 LOCAL_MODULE       := android.hardware.audio.service_64.rc
 else
@@ -63,12 +73,10 @@ LOCAL_CFLAGS += -Wno-unused-local-typedef
 LOCAL_CPPFLAGS += -fexceptions
 
 LOCAL_C_INCLUDES += \
+    $(LOCAL_PATH)/inc \
     system/media/audio_utils/include \
     external/expat/lib \
-    vendor/qcom/opensource/core-utils/fwk-detect \
-    vendor/qcom/opensource/pal \
-    $(call include-path-for, audio-effects) \
-    $(LOCAL_PATH)/audio_extn
+    $(call include-path-for, audio-effects)
 
 LOCAL_SRC_FILES := \
     AudioStream.cpp \
@@ -78,7 +86,11 @@ LOCAL_SRC_FILES := \
     audio_extn/Gain.cpp \
     audio_extn/AudioExtn.cpp
 
-LOCAL_HEADER_LIBRARIES := libhardware_headers qti_audio_kernel_uapi
+LOCAL_HEADER_LIBRARIES := \
+    libhardware_headers \
+    qti_audio_kernel_uapi \
+    libaudio_extn_headers \
+    libagmclient_headers
 
 LOCAL_SHARED_LIBRARIES := \
     libbase \
