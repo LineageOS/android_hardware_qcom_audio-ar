@@ -41,7 +41,7 @@
 #include "AudioVoice.h"
 #include "PalApi.h"
 #include "AudioCommon.h"
-#include <audio_extn/AudioExtn.h>
+#include <AudioExtn.h>
 
 #ifndef AUDIO_MODE_CALL_SCREEN
 #define AUDIO_MODE_CALL_SCREEN 4

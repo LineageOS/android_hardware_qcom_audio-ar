@@ -59,7 +59,7 @@
 #include "PalApi.h"
 #include "PalDefs.h"
 
-#include <audio_extn/AudioExtn.h>
+#include <AudioExtn.h>
 #include "audio_extn.h"
 #include "battery_listener.h"
 
