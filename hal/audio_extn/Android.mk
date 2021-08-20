@@ -43,9 +43,6 @@ LOCAL_SHARED_LIBRARIES := \
     libar-pal
 
 LOCAL_C_INCLUDES := \
-    vendor/qcom/opensource/pal \
-    vendor/qcom/opensource/audio-hal/primary-hal/hal \
-    vendor/qcom/opensource/audio-hal/primary-hal/hal/audio_extn \
     $(LOCAL_PATH)/inc \
     external/expat/lib \
     system/media/audio_utils/include \
@@ -87,9 +84,6 @@ LOCAL_SHARED_LIBRARIES := \
     libar-pal
 
 LOCAL_C_INCLUDES := \
-    vendor/qcom/opensource/pal \
-    vendor/qcom/opensource/audio-hal/primary-hal/hal \
-    vendor/qcom/opensource/audio-hal/primary-hal/hal/audio_extn \
     $(LOCAL_PATH)/inc \
     external/expat/lib \
     system/media/audio_utils/include \
