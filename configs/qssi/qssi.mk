@@ -1,3 +1,5 @@
+AUDIO_HAL_DIR := hardware/qcom-caf/sm8550/audio/primary-hal
+
 #BOARD_USES_GENERIC_AUDIO := true
 #
 #AUDIO_FEATURE_FLAGS
@@ -44,7 +46,7 @@ AUDIO_FEATURE_ENABLED_SVA_MULTI_STAGE := true
 
 ifneq ($(strip $(TARGET_USES_RRO)), true)
 #Audio Specific device overlays
-DEVICE_PACKAGE_OVERLAYS += hardware/qcom/audio/configs/common/overlay
+DEVICE_PACKAGE_OVERLAYS += $(AUDIO_HAL_DIR)/configs/common/overlay
 endif
 
 # Low latency audio buffer size in frames
