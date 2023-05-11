@@ -15,6 +15,10 @@ cc_library_shared {
         "ParamDelegator.cpp",
     ],
 
+    header_libs: [
+        "libarpal_headers",
+    ],
+
     shared_libs: [
         "libar-pal",
     ],
