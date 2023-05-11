@@ -65,6 +65,7 @@ endif
 LOCAL_HEADER_LIBRARIES := libhardware_headers \
                           libsystem_headers \
                           libacdb_headers \
+                          libarpal_headers \
                           libpal_headers \
                           libutils_headers \
                           qti_audio_kernel_uapi
@@ -127,6 +128,7 @@ LOCAL_C_INCLUDES := \
 
 LOCAL_HEADER_LIBRARIES := libhardware_headers \
                           libsystem_headers \
+                          libarpal_headers \
                           libpal_headers \
                           libutils_headers
 
@@ -177,6 +179,7 @@ LOCAL_CFLAGS+= -O2 -fvisibility=hidden
 
 LOCAL_HEADER_LIBRARIES := libhardware_headers \
                           libsystem_headers \
+                          libarpal_headers \
                           libpal_headers \
                           libutils_headers
 
@@ -247,6 +250,7 @@ LOCAL_C_INCLUDES := \
 
 LOCAL_HEADER_LIBRARIES += libhardware_headers
 LOCAL_HEADER_LIBRARIES += libsystem_headers
+LOCAL_HEADER_LIBRARIES += libarpal_headers
 LOCAL_HEADER_LIBRARIES += libpal_headers
 
 include $(BUILD_SHARED_LIBRARY)
