@@ -17,6 +17,7 @@ cc_library_shared {
 
     header_libs: [
         "libacdb_headers",
+        "libarpal_headers",
     ],
 
     shared_libs: [
