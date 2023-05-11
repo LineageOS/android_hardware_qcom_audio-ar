@@ -14,6 +14,10 @@ cc_library_shared {
 
     local_include_dirs: ["include"],
 
+    header_libs: [
+        "libarpal_headers",
+    ],
+
     shared_libs: [
         "libar-pal",
         "libbase",
