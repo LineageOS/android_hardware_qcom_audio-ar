@@ -12,6 +12,8 @@ LOCAL_C_INCLUDES    += \
 
 LOCAL_EXPORT_C_INCLUDE_DIRS   := $(LOCAL_PATH)/include
 
+LOCAL_HEADER_LIBRARIES := libarpal_headers
+
 LOCAL_SRC_FILES := \
     PlatformConverter.cpp
 

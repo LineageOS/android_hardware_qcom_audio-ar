@@ -40,6 +40,7 @@ LOCAL_HEADER_LIBRARIES :=  \
     libxsdc-utils \
     libaudioeffects \
     liberror_headers \
+    libarpal_headers \
     libaudioclient_headers \
     libaudio_system_headers \
     libmedia_helper_headers
