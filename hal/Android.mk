@@ -83,6 +83,9 @@ LOCAL_HEADER_LIBRARIES := \
     libagm_headers \
     libaudio_extn_headers \
     libagmclient_headers
+ifeq ($(QCPATH),)
+LOCAL_HEADER_LIBRARIES += libarpal_headers
+endif
 
 LOCAL_SHARED_LIBRARIES := \
     libbase \
