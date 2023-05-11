@@ -67,6 +67,7 @@ LOCAL_HEADER_LIBRARIES := libhardware_headers \
                           libacdb_headers \
                           libutils_headers \
                           qti_audio_kernel_uapi \
+                          libarpal_headers \
                           libpal_headers
 
 LOCAL_SHARED_LIBRARIES := \
@@ -128,6 +129,7 @@ LOCAL_C_INCLUDES := \
 LOCAL_HEADER_LIBRARIES := libhardware_headers \
                           libsystem_headers \
                           libutils_headers \
+                          libarpal_headers \
                           libpal_headers
 
 LOCAL_SHARED_LIBRARIES := \
@@ -178,6 +180,7 @@ LOCAL_CFLAGS+= -O2 -fvisibility=hidden
 LOCAL_HEADER_LIBRARIES := libhardware_headers \
                           libsystem_headers \
                           libutils_headers \
+                          libarpal_headers \
                           libpal_headers
 
 LOCAL_SHARED_LIBRARIES := \
@@ -247,6 +250,7 @@ LOCAL_C_INCLUDES := \
 
 LOCAL_HEADER_LIBRARIES += libhardware_headers
 LOCAL_HEADER_LIBRARIES += libsystem_headers
+LOCAL_HEADER_LIBRARIES += libarpal_headers
 LOCAL_HEADER_LIBRARIES += libpal_headers
 
 include $(BUILD_SHARED_LIBRARY)
