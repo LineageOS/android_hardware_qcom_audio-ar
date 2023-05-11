@@ -18,6 +18,10 @@ cc_library_shared {
         "GlobalVolumeListenerSession.cpp",
     ],
 
+    header_libs: [
+        "libarpal_headers",
+    ],
+
     shared_libs: [
         "libar-pal",
     ],
