@@ -210,7 +210,7 @@ PRODUCT_PACKAGES += $(AUDIO_C2)
 QCV_FAMILY_SKUS := taro
 DEVICE_SKU := taro
 
-CONFIG_PAL_SRC_DIR := vendor/qcom/opensource/pal/configs/taro
+CONFIG_PAL_SRC_DIR := $(call project-path-for,qcom-audio)/pal/configs/taro
 CONFIG_HAL_SRC_DIR := $(AUDIO_HAL_DIR)/configs/taro
 CONFIG_SKU_OUT_DIR := $(TARGET_COPY_OUT_VENDOR)/etc/audio/sku_$(DEVICE_SKU)
 
