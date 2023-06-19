@@ -177,9 +177,9 @@ PRODUCT_COPY_FILES += \
     vendor/qcom/opensource/audio-hal/primary-hal/configs/lahaina/mixer_paths_lahaina_qrd.xml:$(TARGET_COPY_OUT_VENDOR)/etc/mixer_paths_lahaina_qrd.xml \
     vendor/qcom/opensource/audio-hal/primary-hal/configs/lahaina/mixer_paths_lahaina_mtp.xml:$(TARGET_COPY_OUT_VENDOR)/etc/mixer_paths_lahaina_mtp.xml \
     vendor/qcom/opensource/audio-hal/primary-hal/configs/lahaina/mixer_paths_lahaina_cdp.xml:$(TARGET_COPY_OUT_VENDOR)/etc/mixer_paths_lahaina_cdp.xml \
-    vendor/qcom/opensource/pal/configs/lahaina/resourcemanager_lahaina_qrd.xml:$(TARGET_COPY_OUT_VENDOR)/etc/resourcemanager_lahaina_qrd.xml \
-    vendor/qcom/opensource/pal/configs/lahaina/resourcemanager_lahaina_mtp.xml:$(TARGET_COPY_OUT_VENDOR)/etc/resourcemanager_lahaina_mtp.xml \
-    vendor/qcom/opensource/pal/configs/lahaina/resourcemanager_lahaina_cdp.xml:$(TARGET_COPY_OUT_VENDOR)/etc/resourcemanager_lahaina_cdp.xml \
+    $(call project-path-for,qcom-audio)/pal/configs/lahaina/resourcemanager_lahaina_qrd.xml:$(TARGET_COPY_OUT_VENDOR)/etc/resourcemanager_lahaina_qrd.xml \
+    $(call project-path-for,qcom-audio)/pal/configs/lahaina/resourcemanager_lahaina_mtp.xml:$(TARGET_COPY_OUT_VENDOR)/etc/resourcemanager_lahaina_mtp.xml \
+    $(call project-path-for,qcom-audio)/pal/configs/lahaina/resourcemanager_lahaina_cdp.xml:$(TARGET_COPY_OUT_VENDOR)/etc/resourcemanager_lahaina_cdp.xml \
     vendor/qcom/opensource/audio-hal/primary-hal/configs/common/media_codecs_vendor_audio.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_vendor_audio.xml \
     frameworks/native/data/etc/android.hardware.audio.pro.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.audio.pro.xml \
     frameworks/native/data/etc/android.hardware.audio.low_latency.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.audio.low_latency.xml

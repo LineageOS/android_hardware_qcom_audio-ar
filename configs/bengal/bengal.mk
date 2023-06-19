@@ -199,7 +199,7 @@ PRODUCT_PACKAGES += $(AUDIO_PAL)
 PRODUCT_PACKAGES += $(AUDIO_C2)
 
 # Audio configuration xml's related to Bengal
-CONFIG_PAL_SRC_DIR := vendor/qcom/opensource/pal/configs/bengal
+CONFIG_PAL_SRC_DIR := $(call project-path-for,qcom-audio)/pal/configs/bengal
 CONFIG_HAL_SRC_DIR := vendor/qcom/opensource/audio-hal/primary-hal/configs/bengal
 
 

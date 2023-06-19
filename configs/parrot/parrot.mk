@@ -199,7 +199,7 @@ PRODUCT_PACKAGES += $(AUDIO_C2)
 QCV_FAMILY_SKUS := parrot
 DEVICE_SKU := parrot
 
-CONFIG_PAL_SRC_DIR := vendor/qcom/opensource/pal/configs/parrot
+CONFIG_PAL_SRC_DIR := $(call project-path-for,qcom-audio)/pal/configs/parrot
 CONFIG_HAL_SRC_DIR := vendor/qcom/opensource/audio-hal/primary-hal/configs/parrot
 CONFIG_SKU_OUT_DIR := $(TARGET_COPY_OUT_VENDOR)/etc/audio/sku_$(DEVICE_SKU)
 
