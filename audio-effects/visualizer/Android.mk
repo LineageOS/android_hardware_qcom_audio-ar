@@ -54,7 +54,7 @@ LOCAL_MODULE:= libqcomvisualizer
 LOCAL_VENDOR_MODULE := true
 
 LOCAL_C_INCLUDES := \
-    vendor/qcom/opensource/pal \
+    $(call project-path-for,qcom-audio)/pal \
     $(call include-path-for, audio-effects)
 
 LOCAL_CFLAGS += -Wno-unused-variable
