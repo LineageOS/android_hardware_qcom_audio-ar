@@ -182,7 +182,7 @@ QCV_FAMILY_SKUS := cliffs
 DEVICE_SKU := cliffs
 UV_WRAPPER2 := true
 
-CONFIG_PAL_SRC_DIR := vendor/qcom/opensource/pal/configs/pineapple
+CONFIG_PAL_SRC_DIR := hardware/qcom-caf/sm8650/audio/pal/configs/pineapple
 CONFIG_HAL_SRC_DIR := $(AUDIO_HAL_DIR)/configs/pineapple
 CONFIG_SKU_OUT_DIR := $(TARGET_COPY_OUT_VENDOR)/etc/audio/sku_$(DEVICE_SKU)
 
