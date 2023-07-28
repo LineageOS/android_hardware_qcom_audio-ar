@@ -121,7 +121,7 @@ PRODUCT_PACKAGES += fai__4.8.4_0.0__3.0.0_0.0__3.1.1_0.0__3.2.0_0.1__eai_2.10_en
 QCV_FAMILY_SKUS := kalama
 DEVICE_SKU := kalama
 
-CONFIG_PAL_SRC_DIR := vendor/qcom/opensource/pal/configs/kalama
+CONFIG_PAL_SRC_DIR := hardware/qcom-caf/sm8550/audio/pal/configs/kalama
 CONFIG_HAL_SRC_DIR := $(AUDIO_HAL_DIR)/configs/kalama
 CONFIG_SKU_OUT_DIR := $(TARGET_COPY_OUT_VENDOR)/etc/audio/sku_$(DEVICE_SKU)
 
