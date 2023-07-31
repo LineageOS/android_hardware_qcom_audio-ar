@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "6097ec47_f307fe70",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 13648
+      },
+      "writtenOn": "2023-07-31T20:43:01Z",
+      "side": 1,
+      "message": "I think we will leave all configs alone, except taro. I only touched kalama in the sm8550 branch.",
+      "revId": "81a6b4c3297265c9f9d5b71e4d05481efe93a0e9",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    }
+  ]
+}
