@@ -1752,6 +1752,7 @@ int AudioDevice::SetParameters(const char *kvpairs) {
             AudioExtn::get_controller_stream_from_params(parms, &controller, &stream);
             param_device_connection.device_config.dp_config.controller = controller;
             param_device_connection.device_config.dp_config.stream = stream;
+            dp_controller = controller;
             dp_stream = stream;
             AHAL_INFO("plugin device cont %d stream %d", controller, stream);
         }
