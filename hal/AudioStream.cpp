@@ -89,20 +89,20 @@ static void setup_hdr_usecase(struct pal_device* palInDevice) {
     bool orientationInverted = adevice->inverted;
 
     if (orientationLandscape && !orientationInverted) {
-        strlcpy(palInDevice->custom_config.custom_key,
-            "unprocessed-hdr-mic-landscape",
+        strlcat(palInDevice->custom_config.custom_key,
+            "unprocessed-hdr-mic-landscape;",
             sizeof(palInDevice->custom_config.custom_key));
     } else if (!orientationLandscape && !orientationInverted) {
-        strlcpy(palInDevice->custom_config.custom_key,
-            "unprocessed-hdr-mic-portrait",
+        strlcat(palInDevice->custom_config.custom_key,
+            "unprocessed-hdr-mic-portrait;",
             sizeof(palInDevice->custom_config.custom_key));
     } else if (orientationLandscape && orientationInverted) {
-        strlcpy(palInDevice->custom_config.custom_key,
-            "unprocessed-hdr-mic-inverted-landscape",
+        strlcat(palInDevice->custom_config.custom_key,
+            "unprocessed-hdr-mic-inverted-landscape;",
             sizeof(palInDevice->custom_config.custom_key));
     } else if (!orientationLandscape && orientationInverted) {
-        strlcpy(palInDevice->custom_config.custom_key,
-            "unprocessed-hdr-mic-inverted-portrait",
+        strlcat(palInDevice->custom_config.custom_key,
+            "unprocessed-hdr-mic-inverted-portrait;",
             sizeof(palInDevice->custom_config.custom_key));
     }
     AHAL_INFO("Setting custom key as %s",
@@ -2218,7 +2218,7 @@ int StreamOutPrimary::RouteStream(const std::set<audio_devices_t>& new_devices, 
 
             if ((AudioExtn::audio_devices_cmp(mAndroidOutDevices, AUDIO_DEVICE_OUT_SPEAKER_SAFE)) &&
                                    (mPalOutDeviceIds[i] == PAL_DEVICE_OUT_SPEAKER)) {
-                strlcpy(mPalOutDevice[i].custom_config.custom_key, "speaker-safe",
+                strlcat(mPalOutDevice[i].custom_config.custom_key, "speaker-safe;",
                         sizeof(mPalOutDevice[i].custom_config.custom_key));
                 AHAL_INFO("Setting custom key as %s", mPalOutDevice[i].custom_config.custom_key);
             }
@@ -2230,8 +2230,8 @@ int StreamOutPrimary::RouteStream(const std::set<audio_devices_t>& new_devices, 
 
                 AHAL_DBG("hifi-filter custom key sent to PAL (only applicable to certain streams)\n");
 
-                strlcpy(mPalOutDevice[i].custom_config.custom_key,
-                       "hifi-filter_custom_key",
+                strlcat(mPalOutDevice[i].custom_config.custom_key,
+                       "hifi-filter_custom_key;",
                        sizeof(mPalOutDevice[i].custom_config.custom_key));
             }
 
@@ -2243,16 +2243,16 @@ int StreamOutPrimary::RouteStream(const std::set<audio_devices_t>& new_devices, 
                   (mPalOutDevice[i].id == PAL_DEVICE_OUT_WIRED_HEADPHONE) ||
                   (mPalOutDevice[i].id == PAL_DEVICE_OUT_WIRED_HEADSET))) {
                 if (config_.sample_rate == 8000) {
-                    strlcpy(mPalOutDevice[i].custom_config.custom_key, "8K",
+                    strlcat(mPalOutDevice[i].custom_config.custom_key, "8K;",
                     sizeof(mPalOutDevice[i].custom_config.custom_key));
                 } else if (config_.sample_rate == 16000) {
-                     strlcpy(mPalOutDevice[i].custom_config.custom_key, "16K",
+                     strlcat(mPalOutDevice[i].custom_config.custom_key, "16K;",
                      sizeof(mPalOutDevice[i].custom_config.custom_key));
                 } else if (config_.sample_rate == 32000) {
-                    strlcpy(mPalOutDevice[i].custom_config.custom_key, "32K",
+                    strlcat(mPalOutDevice[i].custom_config.custom_key, "32K;",
                     sizeof(mPalOutDevice[i].custom_config.custom_key));
                 } else if (config_.sample_rate == 48000) {
-                    strlcpy(mPalOutDevice[i].custom_config.custom_key, "48K",
+                    strlcat(mPalOutDevice[i].custom_config.custom_key, "48K;",
                     sizeof(mPalOutDevice[i].custom_config.custom_key));
                 } else {
                     AHAL_DBG("No custom config to set for usecase %d for sr %d",
@@ -2266,7 +2266,7 @@ int StreamOutPrimary::RouteStream(const std::set<audio_devices_t>& new_devices, 
 
         std::shared_ptr<AudioDevice> adevice = AudioDevice::GetInstance();
         if (adevice->hac_voip && (mPalOutDevice->id == PAL_DEVICE_OUT_HANDSET)) {
-            strlcpy(mPalOutDevice->custom_config.custom_key, "HAC",
+            strlcat(mPalOutDevice->custom_config.custom_key, "HAC;",
                    sizeof(mPalOutDevice->custom_config.custom_key));
         }
 
@@ -2726,8 +2726,8 @@ int StreamOutPrimary::Open() {
 
         AHAL_DBG("hifi-filter custom key sent to PAL (only applicable to certain streams)\n");
 
-        strlcpy(mPalOutDevice->custom_config.custom_key,
-                "hifi-filter_custom_key",
+        strlcat(mPalOutDevice->custom_config.custom_key,
+                "hifi-filter_custom_key;",
                 sizeof(mPalOutDevice->custom_config.custom_key));
     }
 
@@ -2752,7 +2752,7 @@ int StreamOutPrimary::Open() {
     }
 
     if (adevice->hac_voip && (mPalOutDevice->id == PAL_DEVICE_OUT_HANDSET)) {
-        strlcpy(mPalOutDevice->custom_config.custom_key, "HAC",
+        strlcat(mPalOutDevice->custom_config.custom_key, "HAC;",
                 sizeof(mPalOutDevice->custom_config.custom_key));
     }
 
@@ -3527,7 +3527,7 @@ StreamOutPrimary::StreamOutPrimary(
 
         if ((AudioExtn::audio_devices_cmp(mAndroidOutDevices, AUDIO_DEVICE_OUT_SPEAKER_SAFE)) &&
                                    (mPalOutDeviceIds[i] == PAL_DEVICE_OUT_SPEAKER)) {
-            strlcpy(mPalOutDevice[i].custom_config.custom_key, "speaker-safe",
+            strlcat(mPalOutDevice[i].custom_config.custom_key, "speaker-safe;",
                      sizeof(mPalOutDevice[i].custom_config.custom_key));
             AHAL_INFO("Setting custom key as %s", mPalOutDevice[i].custom_config.custom_key);
         }
@@ -3540,16 +3540,16 @@ StreamOutPrimary::StreamOutPrimary(
               (mPalOutDevice[i].id == PAL_DEVICE_OUT_WIRED_HEADPHONE) ||
               (mPalOutDevice[i].id == PAL_DEVICE_OUT_WIRED_HEADSET))) {
             if (config_.sample_rate == 8000) {
-                strlcpy(mPalOutDevice[i].custom_config.custom_key, "8K",
+                strlcat(mPalOutDevice[i].custom_config.custom_key, "8K;",
                 sizeof(mPalOutDevice[i].custom_config.custom_key));
             } else if (config_.sample_rate == 16000) {
-                 strlcpy(mPalOutDevice[i].custom_config.custom_key, "16K",
+                 strlcat(mPalOutDevice[i].custom_config.custom_key, "16K;",
                  sizeof(mPalOutDevice[i].custom_config.custom_key));
             } else if (config_.sample_rate == 32000) {
-                strlcpy(mPalOutDevice[i].custom_config.custom_key, "32K",
+                strlcat(mPalOutDevice[i].custom_config.custom_key, "32K;",
                 sizeof(mPalOutDevice[i].custom_config.custom_key));
             } else if (config_.sample_rate == 48000) {
-                strlcpy(mPalOutDevice[i].custom_config.custom_key, "48K",
+                strlcat(mPalOutDevice[i].custom_config.custom_key, "48K;",
                 sizeof(mPalOutDevice[i].custom_config.custom_key));
             } else {
                 AHAL_DBG("No custom config to set for usecase %d for sr %d",
@@ -4037,7 +4037,7 @@ int StreamInPrimary::RouteStream(const std::set<audio_devices_t>& new_devices, b
                 setup_hdr_usecase(&mPalInDevice[i]);
 
             if (source_ == AUDIO_SOURCE_CAMCORDER && adevice->cameraOrientation == CAMERA_DEFAULT) {
-                strlcpy(mPalInDevice[i].custom_config.custom_key, "camcorder_landscape",
+                strlcat(mPalInDevice[i].custom_config.custom_key, "camcorder_landscape;",
                         sizeof(mPalInDevice[i].custom_config.custom_key));
                 AHAL_INFO("Setting custom key as %s", mPalInDevice[i].custom_config.custom_key);
             }
@@ -4048,16 +4048,16 @@ int StreamInPrimary::RouteStream(const std::set<audio_devices_t>& new_devices, b
                  (mPalInDevice[i].id == PAL_DEVICE_IN_SPEAKER_MIC) ||
                  (mPalInDevice[i].id == PAL_DEVICE_IN_WIRED_HEADSET))) {
                 if (config_.sample_rate == 8000) {
-                    strlcpy(mPalInDevice[i].custom_config.custom_key, "8K",
+                    strlcat(mPalInDevice[i].custom_config.custom_key, "8K;",
                     sizeof(mPalInDevice[i].custom_config.custom_key));
                 } else if (config_.sample_rate == 16000) {
-                     strlcpy(mPalInDevice[i].custom_config.custom_key, "16K",
+                     strlcat(mPalInDevice[i].custom_config.custom_key, "16K;",
                      sizeof(mPalInDevice[i].custom_config.custom_key));
                 } else if (config_.sample_rate == 32000) {
-                    strlcpy(mPalInDevice[i].custom_config.custom_key, "32K",
+                    strlcat(mPalInDevice[i].custom_config.custom_key, "32K;",
                     sizeof(mPalInDevice[i].custom_config.custom_key));
                 } else if (config_.sample_rate == 48000) {
-                    strlcpy(mPalInDevice[i].custom_config.custom_key, "48K",
+                    strlcat(mPalInDevice[i].custom_config.custom_key, "48K;",
                     sizeof(mPalInDevice[i].custom_config.custom_key));
                 } else {
                     AHAL_DBG("No custom config to set for usecase %d for sr %d",
@@ -4873,7 +4873,7 @@ StreamInPrimary::StreamInPrimary(audio_io_handle_t handle,
                 sizeof(mPalInDevice[i].custom_config.custom_key));
 
         if (source_ == AUDIO_SOURCE_CAMCORDER && adevice->cameraOrientation == CAMERA_DEFAULT) {
-            strlcpy(mPalInDevice[i].custom_config.custom_key, "camcorder_landscape",
+            strlcat(mPalInDevice[i].custom_config.custom_key, "camcorder_landscape;",
                     sizeof(mPalInDevice[i].custom_config.custom_key));
             AHAL_INFO("Setting custom key as %s", mPalInDevice[i].custom_config.custom_key);
         }
@@ -4884,16 +4884,16 @@ StreamInPrimary::StreamInPrimary(audio_io_handle_t handle,
              (mPalInDevice[i].id == PAL_DEVICE_IN_SPEAKER_MIC) ||
              (mPalInDevice[i].id == PAL_DEVICE_IN_WIRED_HEADSET))) {
             if (config_.sample_rate == 8000) {
-                strlcpy(mPalInDevice[i].custom_config.custom_key, "8K",
+                strlcat(mPalInDevice[i].custom_config.custom_key, "8K;",
                 sizeof(mPalInDevice[i].custom_config.custom_key));
             } else if (config_.sample_rate == 16000) {
-                 strlcpy(mPalInDevice[i].custom_config.custom_key, "16K",
+                 strlcat(mPalInDevice[i].custom_config.custom_key, "16K;",
                  sizeof(mPalInDevice[i].custom_config.custom_key));
             } else if (config_.sample_rate == 32000) {
-                strlcpy(mPalInDevice[i].custom_config.custom_key, "32K",
+                strlcat(mPalInDevice[i].custom_config.custom_key, "32K;",
                 sizeof(mPalInDevice[i].custom_config.custom_key));
             } else if (config_.sample_rate == 48000) {
-                strlcpy(mPalInDevice[i].custom_config.custom_key, "48K",
+                strlcat(mPalInDevice[i].custom_config.custom_key, "48K;",
                 sizeof(mPalInDevice[i].custom_config.custom_key));
             } else {
                 AHAL_DBG("No custom config to set for usecase %d for sr %d",
