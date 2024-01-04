@@ -322,9 +322,6 @@ ro.qc.sdk.audio.ssr=false
 ##fluencetype can be "fluence" or "fluencepro" or "none"
 PRODUCT_VENDOR_PROPERTIES += \
 ro.qc.sdk.audio.fluencetype=none\
-persist.audio.fluence.voicecall=true\
-persist.audio.fluence.voicerec=false\
-persist.audio.fluence.speaker=true
 
 ##speaker protection v3 switch and ADSP AFE API version
 PRODUCT_VENDOR_PROPERTIES += \
@@ -458,10 +455,6 @@ vendor.audio.adm.buffering.ms=2
 #enable headset calibration
 PRODUCT_VENDOR_PROPERTIES += \
 vendor.audio.volume.headset.gain.depcal=true
-
-#enable dualmic fluence for voice communication
-PRODUCT_VENDOR_PROPERTIES += \
-persist.audio.fluence.voicecomm=true
 
 #enable c2 based encoders/decoders as default NT decoders/encoders
 PRODUCT_VENDOR_PROPERTIES += \
