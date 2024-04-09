@@ -28,7 +28,7 @@
  *
  * Changes from Qualcomm Innovation Center are provided under the following license:
  *
- * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2024, Qualcomm Innovation Center, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted (subject to the limitations in the
@@ -527,6 +527,23 @@ private:
     pal_device_id_t* mPalOutDeviceIds;
     std::set<audio_devices_t> mAndroidOutDevices;
     bool mInitialized;
+    bool isOffloadUsecase() {
+        int usecase = GetUseCase();
+        switch (usecase) {
+            case USECASE_AUDIO_PLAYBACK_OFFLOAD:
+            case USECASE_AUDIO_PLAYBACK_OFFLOAD2:
+            case USECASE_AUDIO_PLAYBACK_OFFLOAD3:
+            case USECASE_AUDIO_PLAYBACK_OFFLOAD4:
+            case USECASE_AUDIO_PLAYBACK_OFFLOAD5:
+            case USECASE_AUDIO_PLAYBACK_OFFLOAD6:
+            case USECASE_AUDIO_PLAYBACK_OFFLOAD7:
+            case USECASE_AUDIO_PLAYBACK_OFFLOAD8:
+            case USECASE_AUDIO_PLAYBACK_OFFLOAD9:
+                return true;
+            default:
+                return false;
+        }
+    }
 
 public:
     StreamOutPrimary(audio_io_handle_t handle,
