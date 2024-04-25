@@ -1,6 +1,6 @@
 LOCAL_PATH := $(call my-dir)
 
-LOCAL_AUDIO_SERVICE_64 := taro kalama anorak crow
+LOCAL_AUDIO_SERVICE_64 := taro kalama anorak anorak61 crow
 
 include $(CLEAR_VARS)
 ifeq ($(call is-board-platform-in-list,$(LOCAL_AUDIO_SERVICE_64)), true)
@@ -24,7 +24,7 @@ LOCAL_VENDOR_MODULE := true
 LOCAL_ARM_MODE := arm
 
 LOCAL_VINTF_FRAGMENTS := ../configs/common/manifest_non_qmaa.xml
-ifeq ($(TARGET_BOARD_PLATFORM), anorak)
+ifeq ($(TARGET_BOARD_PLATFORM), anorak anorak61)
 $(warning "Update manifest fragement for anorak")
 LOCAL_VINTF_FRAGMENTS += ../configs/anorak/android.hardware.audio@7.1.xml
 endif
