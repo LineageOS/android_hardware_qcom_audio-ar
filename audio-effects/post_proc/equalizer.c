@@ -2,6 +2,10 @@
  * Copyright (c) 2013-2014, 2017-2019, The Linux Foundation. All rights reserved.
  * Not a Contribution.
  *
+ * Changes from Qualcomm Innovation Center, Inc. are provided under the following license:
+ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
+ *
  * Copyright (C) 2013 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -422,7 +426,7 @@ int equalizer_set_parameter(effect_context_t *context, effect_param_t *p,
         equalizer_set_preset(eq_ctxt, preset);
         break;
     case EQ_PARAM_BAND_LEVEL:
-        if (vsize < sizeof(int16_t)) {
+        if (vsize < sizeof(int32_t)) {
             p->status = -EINVAL;
             break;
         }
