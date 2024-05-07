@@ -30,7 +30,7 @@
 /*
  *  Changes from Qualcomm Innovation Center are provided under the following license:
  *
- *  Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ *  Copyright (c) 2022-2023, 2024 Qualcomm Innovation Center, Inc. All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted (subject to the limitations in the
@@ -2564,10 +2564,11 @@ int StreamOutPrimary::SetParameters(struct str_parms *parms) {
 
     ret = AudioExtn::get_controller_stream_from_params(parms, &controller, &stream);
     if (ret >= 0) {
-        adevice->dp_controller = controller;
-        adevice->dp_stream = stream;
-        if (stream >= 0 || controller >= 0)
+        if (stream >= 0 && controller >= 0) {
+            adevice->dp_controller = controller;
+            adevice->dp_stream = stream;
             AHAL_INFO("ret %d, plugin device cont %d stream %d", ret, controller, stream);
+        }
     } else {
         AHAL_ERR("error %d, failed to get stream and controller", ret);
     }
