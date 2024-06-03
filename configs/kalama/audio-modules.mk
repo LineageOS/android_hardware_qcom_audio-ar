@@ -88,6 +88,8 @@ ifeq ($(call is-board-platform-in-list,kalama),true)
     AUDIO_MODULES += GRD_workspaceFileXml.qwsp
     AUDIO_MODULES += RB5_GEN2_DVT_acdb_cal.acdb
     AUDIO_MODULES += RB5_GEN2_DVT_workspaceFileXml.qwsp
+    AUDIO_MODULES += RB5_GEN2_VC_acdb_cal.acdb
+    AUDIO_MODULES += RB5_GEN2_VC_workspaceFileXml.qwsp
     AUDIO_MODULES += ffv__5.0.2_0.1__eai_2.10_enpu.pmd
     AUDIO_MODULES += AIM_acdb_cal.acdb
     AUDIO_MODULES += AIM_workspaceFileXml.qwsp
