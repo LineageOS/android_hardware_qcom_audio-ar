@@ -2444,6 +2444,14 @@ int StreamOutPrimary::RouteStream(const std::set<audio_devices_t>& new_devices, 
             } else {
                 AHAL_ERR("failed to set device. Error %d" ,ret);
             }
+
+            // set cached voip volume
+            if (volume_ && this->GetUseCase() == USECASE_AUDIO_PLAYBACK_VOIP) {
+                ret = pal_stream_set_volume(pal_stream_handle_, volume_);
+                if (ret) {
+                    AHAL_ERR("Pal Stream volume Error (%x)", ret);
+                }
+            }
         }
     }
 
