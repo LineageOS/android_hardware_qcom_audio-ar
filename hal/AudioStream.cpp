@@ -1943,6 +1943,8 @@ pal_stream_type_t StreamOutPrimary::GetPalStreamType(
         palStreamType = PAL_STREAM_SPATIAL_AUDIO;
     } else if ((halStreamFlags & AUDIO_OUTPUT_FLAG_FAST) != 0) {
         palStreamType = PAL_STREAM_LOW_LATENCY;
+    } else if ((halStreamFlags & AUDIO_OUTPUT_FLAG_TTS) != 0) {
+        palStreamType = PAL_STREAM_LOW_LATENCY;
     } else if (halStreamFlags ==
                     (AUDIO_OUTPUT_FLAG_FAST|AUDIO_OUTPUT_FLAG_RAW)) {
         palStreamType = PAL_STREAM_RAW;
