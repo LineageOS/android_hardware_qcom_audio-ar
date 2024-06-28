@@ -4981,6 +4981,18 @@ StreamInPrimary::StreamInPrimary(audio_io_handle_t handle,
             AHAL_DBG("setting SR for usecase %d as %d", usecase_, config_.sample_rate);
         }
 #endif
+
+#ifdef TRUE_STEREO_ENABLED
+        if (source_ == AUDIO_SOURCE_DEFAULT || source_ == AUDIO_SOURCE_MIC || source_ == AUDIO_SOURCE_CAMCORDER) {
+            uint8_t channels =
+                audio_channel_count_from_in_mask(config_.channel_mask);
+            if (channels == 2) {
+                strlcpy(mPalInDevice[i].custom_config.custom_key, "dual-mic-eans",
+                        sizeof(mPalInDevice[i].custom_config.custom_key));
+                AHAL_INFO("Setting custom key as %s", mPalInDevice[i].custom_config.custom_key);
+            }
+        }
+#endif
     }
 
     if (flags & AUDIO_INPUT_FLAG_MMAP_NOIRQ) {
