@@ -431,6 +431,11 @@ int AudioVoice::RouteStream(const std::set<audio_devices_t>& rx_devices) {
 
     device_count = tx_devices.size() > rx_devices.size() ? tx_devices.size() : rx_devices.size();
 
+    if (IsAnyCallActive() && device_count == 2) {
+        AHAL_ERR("Invalid combo device (%d) for voice call",
+                  AudioExtn::get_device_types(rx_devices));
+        goto exit;
+    }
     pal_device_ids = (pal_device_id_t *)calloc(1, device_count * sizeof(pal_device_id_t));
     if (!pal_device_ids) {
         AHAL_ERR("fail to allocate memory for pal device array");
