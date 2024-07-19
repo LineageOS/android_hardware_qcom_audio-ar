@@ -95,7 +95,7 @@ LOCAL_CFLAGS := \
     -Wno-unused-variable
 
 # Define HEALTH_AIDL for targets other than anorak.
-ifneq ($(TARGET_BOARD_PLATFORM), anorak)
+ifneq ($(filter $(TARGET_BOARD_PLATFORM), anorak anorak61), $(TARGET_BOARD_PLATFORM))
     LOCAL_CFLAGS += -DHEALTH_AIDL
     $(warning "Using AIDL HEALTH")
 endif
@@ -115,7 +115,7 @@ LOCAL_SHARED_LIBRARIES := \
     liblog \
     libutils \
 
-ifneq ($(TARGET_BOARD_PLATFORM), anorak)
+ifneq ($(filter $(TARGET_BOARD_PLATFORM), anorak anorak61), $(TARGET_BOARD_PLATFORM))
     LOCAL_SHARED_LIBRARIES += \
         android.hardware.health-V1-ndk \
         libbinder_ndk

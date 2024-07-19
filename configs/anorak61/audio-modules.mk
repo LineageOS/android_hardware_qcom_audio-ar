@@ -1,18 +1,17 @@
 ifeq ($(TARGET_USES_QMAA),true)
     ifneq ($(TARGET_USES_QMAA_OVERRIDE_AUDIO),true)
     #QMAA Mode is enabled
-    TARGET_AUDIO_QMAA_ENABLED := true
+    TARGET_IS_HEADLESS := true
     endif
 endif
 
 #Packages that should not be installed in QMAA are enabled here
-ifneq ($(TARGET_AUDIO_QMAA_ENABLED),true)
+ifneq ($(TARGET_IS_HEADLESS),true)
 
 #AGM
 AUDIO_AGM := libagmclient
 AUDIO_AGM += vendor.qti.hardware.AGMIPC@1.0-impl
-#not needed for kalama products
-#AUDIO_AGM += vendor.qti.hardware.AGMIPC@1.0-service
+AUDIO_AGM += vendor.qti.hardware.AGMIPC@1.0-service
 AUDIO_AGM += libagm
 AUDIO_AGM += agmplay
 AUDIO_AGM += agmcap
@@ -24,6 +23,8 @@ AUDIO_AGM += libagm_compress_plugin
 AUDIO_AGM += agmcompresscap
 AUDIO_AGM += agmvoiceui
 AUDIO_AGM += agmhostless
+AUDIO_AGM += vendor.qti.hardware.AGMIPC@1.0-service.rc
+AUDIO_AGM += libagmservice
 
 #PAL Service
 AUDIO_PAL += libpalclient
@@ -67,59 +68,24 @@ AUDIO_TEST += osal_in_test_example
 #AUDIO_MODULES := audio.a2dp.default
 AUDIO_MODULES := audio.usb.default
 AUDIO_MODULES += audio.r_submix.default
-ifeq ($(call is-board-platform-in-list,kalama),true)
-    AUDIO_MODULES += audio.primary.kalama
-    AUDIO_MODULES += ftm_test_config
-    AUDIO_MODULES += ftm_test_config_kalama-qrd-snd-card
-    AUDIO_MODULES += ftm_test_config_kalama-grd-snd-card
-    AUDIO_MODULES += MTP_acdb_cal.acdb
-    AUDIO_MODULES += MTP_workspaceFileXml.qwsp
-    AUDIO_MODULES += MTP_APQ_acdb_cal.acdb
-    AUDIO_MODULES += MTP_APQ_workspaceFileXml.qwsp
-    AUDIO_MODULES += CDP_acdb_cal.acdb
-    AUDIO_MODULES += CDP_workspaceFileXml.qwsp
-    AUDIO_MODULES += CDP_APQ_acdb_cal.acdb
-    AUDIO_MODULES += CDP_APQ_workspaceFileXml.qwsp
-    AUDIO_MODULES += QRD_acdb_cal.acdb
-    AUDIO_MODULES += QRD_workspaceFileXml.qwsp
-    AUDIO_MODULES += IDP_UPD_acdb_cal.acdb
-    AUDIO_MODULES += IDP_UPD_workspaceFileXml.qwsp
-    AUDIO_MODULES += GRD_acdb_cal.acdb
-    AUDIO_MODULES += GRD_workspaceFileXml.qwsp
-    AUDIO_MODULES += RB5_GEN2_DVT_acdb_cal.acdb
-    AUDIO_MODULES += RB5_GEN2_DVT_workspaceFileXml.qwsp
-    AUDIO_MODULES += RB5_GEN2_VC_acdb_cal.acdb
-    AUDIO_MODULES += RB5_GEN2_VC_workspaceFileXml.qwsp
-    AUDIO_MODULES += ffv__5.0.2_0.1__eai_2.10_enpu.pmd
-    AUDIO_MODULES += AIM_acdb_cal.acdb
-    AUDIO_MODULES += AIM_workspaceFileXml.qwsp
-endif
-ifeq ($(call is-board-platform-in-list,crow),true)
-    AUDIO_MODULES += audio.primary.crow
-    AUDIO_MODULES += ftm_test_config_crow-idp-wsa883x-snd-card
-    AUDIO_MODULES += ftm_test_config_crow-qrd-wsa883x-snd-card
-    AUDIO_MODULES += ftm_test_config_crow-idp-wcd9395-dmic-snd-card
-    AUDIO_MODULES += ftm_test_config_crow-idp-wcd9395-wcd-dmic-snd-c
-    AUDIO_MODULES += ftm_test_config_crow-idp-wcd9395-aatc-snd-card
-    AUDIO_MODULES += QRD_acdb_cal.acdb
-    AUDIO_MODULES += QRD_workspaceFileXml.qwsp
-    AUDIO_MODULES += IDP_acdb_cal.acdb
-    AUDIO_MODULES += IDP_workspaceFileXml.qwsp
-    AUDIO_MODULES += QRD_crow_sku1_acdb_cal.acdb
-    AUDIO_MODULES += QRD_crow_sku1_workspaceFileXml.qwsp
-    AUDIO_MODULES += IDP_crow_sku1_acdb_cal.acdb
-    AUDIO_MODULES += IDP_crow_sku1_workspaceFileXml.qwsp
-    AUDIO_MODULES += IDP_UPD_acdb_cal.acdb
-    AUDIO_MODULES += IDP_UPD_workspaceFileXml.qwsp
-endif
+AUDIO_MODULES += audio.primary.anorak61
+AUDIO_MODULES += ftm_test_config_anorak-idp-snd-card
+AUDIO_MODULES += ftm_test_config_anorak-qxr-snd-card
 AUDIO_MODULES += audioadsprpcd
 AUDIO_MODULES += android.hardware.audio.service_64
+AUDIO_MODULES += IDP_acdb_cal.acdb
+AUDIO_MODULES += IDP_workspaceFileXml.qwsp
+AUDIO_MODULES += QXR_acdb_cal.acdb
+AUDIO_MODULES += QXR_workspaceFileXml.qwsp
 AUDIO_MODULES += fai__2.3.0_0.1__3.0.0_0.0__eai_1.10.pmd
 AUDIO_MODULES += fai__2.3.0_0.1__3.0.0_0.0__eai_1.36_enpu2_comp.pmd
 AUDIO_MODULES += fai__2.0.0_0.1__3.0.0_0.0__eai_1.36_enpu2.pmd
 AUDIO_MODULES += fai__2.7.2_0.0__3.0.0_0.0__eai_1.36_enpu2.pmd
 AUDIO_MODULES += fai__2.7.20_0.0__3.0.0_0.0__eai_1.36_enpu2.pmd
 AUDIO_MODULES += fai__3.0.0_0.0__eai_1.36_enpu2.pmd
+AUDIO_MODULES += fai__3.0.0_0.0__eai_2.10_enpuv3.pmd
+AUDIO_MODULES += ffv__5.0.1_0.1__3.0.0_0.0__eai_2.7_enpu3.pmd
+AUDIO_MODULES += ffv__5.0.1_0.1__eai_2.7_enpu3.pmd
 AUDIO_MODULES += ffv__5.0.1_0.1__3.0.0_0.0__eai_2.10_enpu3.pmd
 AUDIO_MODULES += ffv__5.0.1_0.1__eai_2.10_enpu3.pmd
 AUDIO_MODULES += libfmpal
@@ -132,13 +98,6 @@ AUDIO_MODULES += mm-audio-ftm
 AUDIO_MODULES += libmcs
 AUDIO_MODULES += libquasar
 AUDIO_MODULES += sensors.dynamic_sensor_hal
-
-ifeq ($(PRODUCT_ENABLE_QESDK),true)
-AUDIO_MODULES += libvui_dmgr
-AUDIO_MODULES += libvui_dmgr_client
-AUDIO_MODULES += qsap_voiceui
-AUDIO_MODULES += qsap_voiceui.policy
-endif
 
 AUDIO_MODULES += $(AUDIO_AGM)
 AUDIO_MODULES += $(AUDIO_PAL)
@@ -202,4 +161,8 @@ AUDIO_MODULES += \
     vendor.qti.hardware.ListenSoundModel@1.0 \
     vendor.qti.hardware.ListenSoundModel@1.0-impl
 
+#usb recorder
+AUDIO_MODULES += \
+    vendor.qti.hardware.umd@1.0-service \
+    libumd-adaptor
 endif
