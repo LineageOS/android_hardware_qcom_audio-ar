@@ -1,6 +1,7 @@
 cc_library_shared {
     name: "libqcomvoiceprocessing",
     defaults: [
+        "android_hardware_qtiaudio_config_defaults",
         "qtiaudio_gcov_defaults",
     ],
     owner: "qti",
