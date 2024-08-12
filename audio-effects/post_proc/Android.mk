@@ -77,6 +77,10 @@ LOCAL_SHARED_LIBRARIES := \
 
 LOCAL_MODULE_TAGS := optional
 
+ifeq ($(SOONG_CONFIG_android_hardware_audio_run_64bit), true)
+LOCAL_MULTILIB := 64
+endif
+
 LOCAL_MODULE_RELATIVE_PATH := soundfx
 LOCAL_MODULE:= libqcompostprocbundle
 LOCAL_VENDOR_MODULE := true
@@ -186,6 +190,10 @@ LOCAL_SHARED_LIBRARIES := \
         libdl \
         libar-pal \
         libaudioutils
+
+ifeq ($(SOONG_CONFIG_android_hardware_audio_run_64bit), true)
+LOCAL_MULTILIB := 64
+endif
 
 LOCAL_MODULE_RELATIVE_PATH := soundfx
 LOCAL_MODULE:= libvolumelistener
