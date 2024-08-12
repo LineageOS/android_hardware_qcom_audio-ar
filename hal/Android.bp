@@ -23,6 +23,9 @@ target_board_platform_cc_library_shared {
             },
         },
     },
+    defaults: [
+        "android_hardware_audio_config_defaults",
+    ],
     owner: "qti",
     relative_install_path: "hw",
     vendor: true,
