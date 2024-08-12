@@ -49,6 +49,10 @@ LOCAL_SHARED_LIBRARIES := \
     libdl \
     libar-pal
 
+ifeq ($(SOONG_CONFIG_android_hardware_audio_run_64bit), true)
+LOCAL_MULTILIB := 64
+endif
+
 LOCAL_MODULE_RELATIVE_PATH := soundfx
 LOCAL_MODULE:= libqcomvisualizer
 LOCAL_VENDOR_MODULE := true
