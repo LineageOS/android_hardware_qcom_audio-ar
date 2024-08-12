@@ -1,6 +1,7 @@
 cc_library_static {
     name: "libaudio_module_config.qti",
     defaults: [
+        "android_hardware_qtiaudio_config_defaults",
         "latest_android_hardware_audio_core_ndk_shared",
         "latest_android_media_audio_common_types_ndk_shared",
     ],

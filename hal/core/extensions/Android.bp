@@ -1,5 +1,8 @@
 cc_library_shared {
     name: "libhfp_pal",
+    defaults: [
+        "android_hardware_qtiaudio_config_defaults",
+    ],
     vendor: true,
 
     cflags: [
@@ -44,6 +47,9 @@ cc_library_shared {
 
 cc_library_shared {
     name: "libfmpal",
+    defaults: [
+        "android_hardware_qtiaudio_config_defaults",
+    ],
     vendor: true,
 
     cflags: [
@@ -80,6 +86,9 @@ cc_library_shared {
 
 cc_library_shared {
     name: "libbatterylistener",
+    defaults: [
+        "android_hardware_qtiaudio_config_defaults",
+    ],
     vendor: true,
 
     cflags: [

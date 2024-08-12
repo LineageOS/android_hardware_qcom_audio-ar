@@ -1,6 +1,7 @@
 cc_library_shared {
     name: "libaudiocorehal.qti",
     defaults: [
+        "android_hardware_qtiaudio_config_defaults",
         "latest_android_hardware_audio_core_ndk_shared",
         "latest_android_hardware_audio_core_sounddose_ndk_shared",
         "latest_android_hardware_audio_effect_ndk_shared",
@@ -84,6 +85,7 @@ cc_library_shared {
 cc_library_static {
     name: "libaudiocore.extension",
     defaults: [
+        "android_hardware_qtiaudio_config_defaults",
         "latest_android_hardware_audio_core_ndk_shared",
         "latest_android_media_audio_common_types_ndk_shared",
     ],
@@ -132,6 +134,7 @@ cc_library_static {
 cc_library_static {
     name: "libaudioplatform.qti",
     defaults: [
+        "android_hardware_qtiaudio_config_defaults",
         "latest_android_hardware_audio_core_ndk_shared",
         "latest_android_media_audio_common_types_ndk_shared",
     ],
