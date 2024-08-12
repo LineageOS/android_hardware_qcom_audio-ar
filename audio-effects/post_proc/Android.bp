@@ -1,6 +1,7 @@
 cc_library_shared {
     name: "libqcompostprocbundle",
     defaults: [
+        "android_hardware_qtiaudio_config_defaults",
         "qtiaudio_gcov_defaults",
     ],
     owner: "qti",
@@ -68,6 +69,9 @@ cc_library_shared {
 
 cc_library_shared {
     name: "libvolumelistener",
+    defaults: [
+        "android_hardware_qtiaudio_config_defaults",
+    ],
     owner: "qti",
     relative_install_path: "soundfx",
     vendor: true,
