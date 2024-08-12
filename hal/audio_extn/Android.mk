@@ -14,6 +14,10 @@ include $(BUILD_HEADER_LIBRARY)
 #-------------------------------------------
 include $(CLEAR_VARS)
 
+ifeq ($(SOONG_CONFIG_android_hardware_audio_run_64bit), true)
+LOCAL_MULTILIB := 64
+endif
+
 LOCAL_MODULE := libhfp_pal
 LOCAL_VENDOR_MODULE := true
 
@@ -57,6 +61,10 @@ include $(BUILD_SHARED_LIBRARY)
 #            Build FM LIB
 #-------------------------------------------
 include $(CLEAR_VARS)
+
+ifeq ($(SOONG_CONFIG_android_hardware_audio_run_64bit), true)
+LOCAL_MULTILIB := 64
+endif
 
 LOCAL_MODULE := libfmpal
 LOCAL_VENDOR_MODULE := true
