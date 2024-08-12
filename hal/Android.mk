@@ -38,6 +38,10 @@ LOCAL_ARM_MODE := arm
 
 LOCAL_VINTF_FRAGMENTS := ../configs/common/manifest_non_qmaa.xml
 
+ifeq ($(SOONG_CONFIG_android_hardware_audio_run_64bit), true)
+LOCAL_MULTILIB := 64
+endif
+
 ifeq ($(strip $(AUDIO_FEATURE_ENABLED_LSM_HIDL)),true)
 LOCAL_VINTF_FRAGMENTS += ../configs/common/manifest_non_qmaa_extn.xml
 endif
