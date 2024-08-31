@@ -25,6 +25,10 @@
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Changes from Qualcomm Innovation Center, Inc. are provided under the following license:
+ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
 #ifndef AUDIOEXTN_H
@@ -83,8 +87,8 @@ class CompressCapture {
     static const uint32_t kAacPCMSamplesPerFrame = 1024;
 
     // min and max bitrates supported for AAC mono and stereo
-    static const int32_t kAacMonoMinSupportedBitRate = 4000;
-    static const int32_t kAacStereoMinSupportedBitRate = 8000;
+    static const int32_t kAacMonoMinSupportedBitRate = 8000;
+    static const int32_t kAacStereoMinSupportedBitRate = 16000;
 
     static const int32_t kAacMonoMaxSupportedBitRate = 192000;
     static const int32_t kAacStereoMaxSupportedBitRate = 384000;
