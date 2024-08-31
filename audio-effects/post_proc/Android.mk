@@ -46,6 +46,10 @@ ifeq ($(strip $(AUDIO_FEATURE_ENABLED_INSTANCE_ID)), true)
     LOCAL_CFLAGS += -DINSTANCE_ID_ENABLED
 endif
 
+ifeq ($(TARGET_BOARD_PLATFORM), anorak61)
+LOCAL_CFLAGS += -DBYPASS_HW_ACCELERATED_EFFECTS
+endif
+
 ifeq ($(strip $(AUDIO_FEATURE_ENABLED_GCOV)),true)
     LOCAL_CFLAGS += --coverage -fprofile-arcs -ftest-coverage
     LOCAL_CPPFLAGS += --coverage -fprofile-arcs -ftest-coverage

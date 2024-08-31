@@ -2,6 +2,10 @@
  * Copyright (c) 2013-2014, 2017-2019, The Linux Foundation. All rights reserved.
  * Not a Contribution.
  *
+ * Changes from Qualcomm Innovation Center, Inc. are provided under the following license:
+ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
+ *
  * Copyright (C) 2013 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -426,7 +430,7 @@ int equalizer_set_parameter(effect_context_t *context, effect_param_t *p,
             p->status = -EINVAL;
             break;
         }
-        band =  *param_tmp;
+        band =  *(int16_t *)param_tmp;
         level = (int32_t)(*(int16_t *)value);
         if (band < 0 || band >= NUM_EQ_BANDS) {
             p->status = -EINVAL;
