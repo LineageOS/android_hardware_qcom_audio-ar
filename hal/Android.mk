@@ -11,6 +11,7 @@ LOCAL_VENDOR_MODULE := true
 
 include $(BUILD_HEADER_LIBRARY)
 
+ifneq ($(TARGET_PROVIDES_AUDIO_HAL),true)
 include $(CLEAR_VARS)
 
 ifeq ($(call is-board-platform-in-list,$(LOCAL_AUDIO_SERVICE_64)), true)
@@ -133,3 +134,4 @@ endif
 endif
 
 include $(BUILD_SHARED_LIBRARY)
+endif
