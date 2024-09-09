@@ -1,3 +1,4 @@
+ifneq ($(TARGET_PROVIDES_AUDIO_HAL),true)
 LOCAL_PATH := $(call my-dir)
 
 LOCAL_AUDIO_SERVICE_64 := taro kalama anorak pineapple pitti volcano
@@ -139,3 +140,4 @@ endif
 endif
 
 include $(BUILD_SHARED_LIBRARY)
+endif
