@@ -16,6 +16,23 @@
       "message": "Would come handy for socrates",
       "revId": "08f3d4d6bae442a602ebb440d499ad9aed330116",
       "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "50ebfae8_1890d9ca",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 22465
+      },
+      "writtenOn": "2024-09-22T17:58:13Z",
+      "side": 1,
+      "message": "Not needed anymore for socrates.",
+      "revId": "08f3d4d6bae442a602ebb440d499ad9aed330116",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
     }
   ]
 }
