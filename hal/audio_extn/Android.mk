@@ -34,7 +34,7 @@ LOCAL_SHARED_LIBRARIES := \
     libar-pal
 
 LOCAL_C_INCLUDES := \
-    $(call project-path-for,qcom-audio)/pal \
+    vendor/qcom/opensource/pal \
     $(call project-path-for,qcom-audio)/primary-hal/hal \
     $(call project-path-for,qcom-audio)/primary-hal/hal/audio_extn \
     external/expat/lib \
@@ -75,7 +75,7 @@ LOCAL_SHARED_LIBRARIES := \
     libar-pal
 
 LOCAL_C_INCLUDES := \
-    $(call project-path-for,qcom-audio)/pal \
+    vendor/qcom/opensource/pal \
     $(call project-path-for,qcom-audio)/primary-hal/hal \
     $(call project-path-for,qcom-audio)/primary-hal/hal/audio_extn \
     external/expat/lib \
