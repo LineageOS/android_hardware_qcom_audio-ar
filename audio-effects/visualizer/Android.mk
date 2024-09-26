@@ -39,6 +39,8 @@ endif
 
 LOCAL_HEADER_LIBRARIES := libsystem_headers \
                           libhardware_headers
+LOCAL_HEADER_LIBRARIES += libarpal_headers
+
 LOCAL_SHARED_LIBRARIES := \
     libcutils \
     liblog \
