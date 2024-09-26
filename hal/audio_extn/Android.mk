@@ -44,8 +44,8 @@ LOCAL_SHARED_LIBRARIES := \
 
 LOCAL_C_INCLUDES := \
     vendor/qcom/opensource/pal \
-    $(call project-path-for,qcom-audio)/primary-hal/hal \
-    $(call project-path-for,qcom-audio)/primary-hal/hal/audio_extn \
+    vendor/qcom/opensource/audio-hal/primary-hal/hal \
+    vendor/qcom/opensource/audio-hal/primary-hal/hal/audio_extn \
     $(LOCAL_PATH)/inc \
     external/expat/lib \
     system/media/audio_utils/include \
@@ -88,8 +88,8 @@ LOCAL_SHARED_LIBRARIES := \
 
 LOCAL_C_INCLUDES := \
     vendor/qcom/opensource/pal \
-    $(call project-path-for,qcom-audio)/primary-hal/hal \
-    $(call project-path-for,qcom-audio)/primary-hal/hal/audio_extn \
+    vendor/qcom/opensource/audio-hal/primary-hal/hal \
+    vendor/qcom/opensource/audio-hal/primary-hal/hal/audio_extn \
     $(LOCAL_PATH)/inc \
     external/expat/lib \
     system/media/audio_utils/include \
