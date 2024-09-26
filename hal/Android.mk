@@ -73,12 +73,12 @@ LOCAL_C_INCLUDES += \
     system/media/audio_utils/include \
     external/expat/lib \
     vendor/qcom/opensource/core-utils/fwk-detect \
-    $(call project-path-for,qcom-audio)/pal \
+    vendor/qcom/opensource/pal \
     $(call include-path-for, audio-effects) \
     $(LOCAL_PATH)/audio_extn \
-    $(call project-path-for,qcom-audio)/agm/ipc/HwBinders/agm_ipc_client/ \
-    $(call project-path-for,qcom-audio)/agm/ipc/HwBinders/agm_ipc_service/inc/ \
-    $(call project-path-for,qcom-audio)/pal/ipc/HwBinders/pal_ipc_server/inc/
+    $(TOP)/vendor/qcom/opensource/agm/ipc/HwBinders/agm_ipc_client/ \
+    $(TOP)/vendor/qcom/opensource/agm/ipc/HwBinders/agm_ipc_service/inc/ \
+    $(TOP)/vendor/qcom/opensource/pal/ipc/HwBinders/pal_ipc_server/inc/
 
 LOCAL_SRC_FILES := \
     AudioStream.cpp \
