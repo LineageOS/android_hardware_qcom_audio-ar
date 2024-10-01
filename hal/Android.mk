@@ -89,7 +89,10 @@ LOCAL_HEADER_LIBRARIES := \
     libaudio_extn_headers \
     libagmclient_headers
 ifeq ($(QCPATH),)
-LOCAL_HEADER_LIBRARIES += libarpal_headers
+LOCAL_HEADER_LIBRARIES += \
+    libagmserver_headers \
+    libarpal_headers \
+    libpalserver_headers
 endif
 
 LOCAL_SHARED_LIBRARIES := \
