@@ -16,6 +16,23 @@
       "message": "This is merged at the wrong branch and the whole chain made it to 21.0 somehow",
       "revId": "f784a33c6ed00200d36c2297dd7930bcf5c4a650",
       "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b39ec79e_434e36ec",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 6360
+      },
+      "writtenOn": "2024-10-18T07:57:29Z",
+      "side": 1,
+      "message": "Can we revert this chain? It is breaking build for sm8550.\n\nIn file included from vendor/qcom/opensource/audio-hal/st-hal-ar/SoundTriggerSession.cpp:71:\nIn file included from vendor/qcom/opensource/audio-hal/st-hal-ar/SoundTriggerSession.h:74:\nvendor/qcom/opensource/audio-hal/st-hal-ar/SoundTriggerPropIntf.h:37:10: fatal error: \u0027audio_extn.h\u0027 file not found\n   37 | #include \"audio_extn.h\"\n      |          ^~~~~~~~~~~~~~\n1 error generated.",
+      "revId": "f784a33c6ed00200d36c2297dd7930bcf5c4a650",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
     }
   ],
   "submitRequirementResults": []
