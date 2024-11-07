@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e562d506_94bb0c61",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 21290
+      },
+      "writtenOn": "2024-11-07T10:00:08Z",
+      "side": 1,
+      "message": "It might make sense to squash this, the previous commit is just broken currently.",
+      "revId": "52106c210cf0f70004e7dfac9e797ce88c4ec852",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    }
+  ]
+}
