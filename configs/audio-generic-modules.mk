@@ -1,4 +1,4 @@
-LATEST_ANDROID_HARDWARE_AUDIO_EFFECT := android.hardware.audio.effect-V2-ndk
+LATEST_ANDROID_HARDWARE_AUDIO_EFFECT := android.hardware.audio.effect-V3-ndk
 LATEST_ANDROID_HARDWARE_COMMON := android.hardware.common-V2-ndk
 LATEST_ANDROID_MEDIA_ADUIO_COMMON_TYPES := android.media.audio.common.types-V3-ndk
 LATEST_ANDROID_HARDWARE_COMMON_FMQ := android.hardware.common.fmq-V1-ndk
