@@ -111,7 +111,8 @@ ifeq ($(strip $(AUDIO_FEATURE_ENABLED_AGM_HIDL)),true)
 
   LOCAL_CFLAGS += -DAGM_HIDL_ENABLED
   LOCAL_C_INCLUDES += \
-    $(TOP)/$(call project-path-for,qcom-audio)/agm/ipc/HwBinders/agm_ipc_client/
+    $(TOP)/$(call project-path-for,qcom-audio)/agm/ipc/HwBinders/agm_ipc_client/ \
+    $(TOP)/$(call project-path-for,qcom-audio)/agm/ipc/HwBinders/agm_ipc_service/inc/
 
   LOCAL_HEADER_LIBRARIES += \
     libagm_headers
