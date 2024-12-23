@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f24b3341_fdfcce27",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 33800
+      },
+      "writtenOn": "2024-12-23T03:55:07Z",
+      "side": 1,
+      "message": "https://review.lineageos.org/c/LineageOS/android_vendor_qcom_opensource_agm/+/404455/1/ipc/HwBinders/agm_ipc_service/Android.mk\n\nUse libagmclient_headers instead.",
+      "revId": "204b9f4018388ffee8609e3c7453e5acb71f50a7",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    }
+  ]
+}
