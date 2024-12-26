@@ -16,6 +16,24 @@
       "message": "https://review.lineageos.org/c/LineageOS/android_vendor_qcom_opensource_agm/+/404455/1/ipc/HwBinders/agm_ipc_service/Android.mk\n\nUse libagmclient_headers instead.",
       "revId": "204b9f4018388ffee8609e3c7453e5acb71f50a7",
       "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e3a29988_efedd869",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 34454
+      },
+      "writtenOn": "2024-12-26T09:57:06Z",
+      "side": 1,
+      "message": "Thank you for reviewing! Your suggestion would make implementations diverge then between the branches. Looking at sm8550, I can see similar path as used by me (https://github.com/LineageOS/android_hardware_qcom_audio-ar/blob/lineage-21.0-caf-sm8550/hal/Android.mk#L70. \n\nWith that in mind, should I still change it?",
+      "parentUuid": "f24b3341_fdfcce27",
+      "revId": "204b9f4018388ffee8609e3c7453e5acb71f50a7",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
     }
   ]
 }
