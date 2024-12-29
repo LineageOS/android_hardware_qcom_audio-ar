@@ -78,6 +78,7 @@ LOCAL_SRC_FILES := \
     AudioStream.cpp \
     AudioDevice.cpp \
     AudioVoice.cpp \
+    Lvacfs.cpp \
     audio_extn/soundtrigger.cpp \
     audio_extn/Gain.cpp \
     audio_extn/AudioExtn.cpp
