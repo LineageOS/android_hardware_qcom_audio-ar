@@ -343,12 +343,14 @@ AudioDevice::~AudioDevice() {
 #ifdef AUDIO_ULTRASOUND_PROXIMITY_ENABLED
     audio_hal_con_thread_exit();
 #endif
+    if (Lvacfs::isLvacfsEnabled()) {
+        Lvacfs::getInstance().deinit();
+    }
     audio_extn_gef_deinit(adev_);
     audio_extn_sound_trigger_deinit(adev_);
     AudioExtn::battery_properties_listener_deinit();
     pal_deinit();
 }
-
 
 std::shared_ptr<AudioDevice> AudioDevice::GetInstance() {
     if (!adev_) {
@@ -1182,6 +1184,9 @@ int AudioDevice::Init(hw_device_t **device, const hw_module_t *module) {
     FillAndroidDeviceMap();
     FillPalDeviceMap();
     audio_extn_gef_init(adev_);
+    if (Lvacfs::isLvacfsEnabled()) {
+        Lvacfs::getInstance().init();
+    }
     adev_init_ref_count += 1;
 
     memset(&microphones, 0, sizeof(microphone_characteristics_t));
