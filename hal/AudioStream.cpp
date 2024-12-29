@@ -3861,6 +3861,10 @@ int StreamInPrimary::Standby() {
     if (ret)
         ret = -EINVAL;
 
+    if (lvacfs.getWrapperOps() && lvacfs_handle) {
+        lvacfs.stopInputStream(this);
+    }
+
     stream_mutex_.unlock();
     AHAL_DBG("Exit ret: %d", ret);
     return ret;
@@ -4445,6 +4449,10 @@ int StreamInPrimary::Open() {
         }
     }
 
+    if (lvacfs.getWrapperOps() && !lvacfs_handle) {
+        lvacfs.startInputStream(this);
+    }
+
 set_buff_size:
     if (usecase_ == USECASE_AUDIO_RECORD_MMAP) {
         inBufSize = MMAP_PERIOD_SIZE * audio_bytes_per_frame(
@@ -4725,6 +4733,10 @@ ssize_t StreamInPrimary::read(const void *buffer, size_t bytes) {
         memset(palBuffer.buffer, 0, palBuffer.size);
     }
 
+    if (lvacfs.getWrapperOps() && lvacfs_handle) {
+        lvacfs.processInputStream(this, palBuffer.buffer, palBuffer.size);
+    }
+
 exit:
     if (mBytesRead <= UINT64_MAX - bytes) {
         mBytesRead += bytes;
@@ -4774,6 +4786,7 @@ StreamInPrimary::StreamInPrimary(audio_io_handle_t handle,
     audio_source_t source) :
     StreamPrimary(handle, devices, config),
     mAndroidInDevices(devices),
+    lvacfs(Lvacfs::getInstance()),
     flags_(flags)
 {
     stream_ = std::shared_ptr<audio_stream_in> (new audio_stream_in());
@@ -5001,6 +5014,10 @@ StreamInPrimary::StreamInPrimary(audio_io_handle_t handle,
         stream_.get()->create_mmap_buffer = astream_in_create_mmap_buffer;
         stream_.get()->get_mmap_position = astream_in_get_mmap_position;
     }
+
+    if (Lvacfs::isLvacfsEnabled()) {
+        lvacfs.init();
+    }
     mInitialized = true;
 error:
     (void)FillHalFnPtrs();
@@ -5010,6 +5027,9 @@ error:
 
 StreamInPrimary::~StreamInPrimary() {
     stream_mutex_.lock();
+    if (Lvacfs::isLvacfsEnabled()) {
+        lvacfs.deinit();
+    }
     if (pal_stream_handle_ && !is_st_session) {
         AHAL_DBG("close stream, pal_stream_handle (%p)",
              pal_stream_handle_);
