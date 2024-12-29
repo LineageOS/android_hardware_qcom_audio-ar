@@ -4189,6 +4189,10 @@ int StreamInPrimary::Standby() {
     if (ret)
         ret = -EINVAL;
 
+    if (lvacfs.getWrapperOps() && lvacfs_handle) {
+        lvacfs.stopInputStream(this);
+    }
+
     stream_mutex_.unlock();
     AHAL_DBG("Exit ret: %d", ret);
     return ret;
@@ -4866,6 +4870,10 @@ int StreamInPrimary::Open() {
         }
     }
 
+    if (lvacfs.getWrapperOps() && !lvacfs_handle) {
+        lvacfs.startInputStream(this);
+    }
+
 set_buff_size:
     if (usecase_ == USECASE_AUDIO_RECORD_MMAP) {
         inBufSize = MMAP_PERIOD_SIZE * audio_bytes_per_frame(
@@ -5144,6 +5152,10 @@ ssize_t StreamInPrimary::read(const void *buffer, size_t bytes) {
         memset(palBuffer.buffer, 0, palBuffer.size);
     }
 
+    if (lvacfs.getWrapperOps() && lvacfs_handle) {
+        lvacfs.processInputStream(this, palBuffer.buffer, palBuffer.size);
+    }
+
 exit:
     if (mBytesRead <= UINT64_MAX - bytes) {
         mBytesRead += bytes;
@@ -5197,6 +5209,7 @@ StreamInPrimary::StreamInPrimary(audio_io_handle_t handle,
     audio_source_t source) :
     StreamPrimary(handle, devices, config),
     mAndroidInDevices(devices),
+    lvacfs(Lvacfs::getInstance()),
     flags_(flags),
     btSinkMetadata{0, nullptr}
 {
