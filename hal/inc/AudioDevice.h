@@ -63,8 +63,6 @@
 #define AUDIO_PARAMETER_KEY_FACING "facing"
 #define AUDIO_PARAMETER_KEY_HDR_CHANNELS "hdr_audio_channel_count"
 #define AUDIO_PARAMETER_KEY_HDR_SAMPLERATE "hdr_audio_sampling_rate"
-/* Get Mic Occlusion Info*/
-#define AUDIO_PARAMETER_KEY_MIC_OCCLUSION_INFO "mic_occlusion_info"
 
 #define AUDIO_MAKE_STRING_FROM_ENUM(X)   { #X, X }
 #define PAL_MAX_INPUT_DEVICES (PAL_DEVICE_IN_MAX - (PAL_DEVICE_IN_MIN + 1))
@@ -170,7 +168,6 @@ public:
     int SetVoiceVolume(float volume);
     void SetChargingMode(bool is_charging);
     void FillAndroidDeviceMap();
-    void FillPalDeviceMap();
     int GetPalDeviceIds(
             const std::set<audio_devices_t>& hal_device_id,
             pal_device_id_t* pal_device_id);
@@ -222,8 +219,6 @@ public:
     static void xml_end_tag(void *userdata, const XML_Char *tag_name);
     static void xml_char_data_handler(void *userdata, const XML_Char *s, int len);
     static int parse_xml();
-    const char* getAndroidDevice(pal_device_id_t id);
-
 protected:
     AudioDevice() {}
     std::shared_ptr<AudioVoice> VoiceInit();
@@ -245,7 +240,6 @@ protected:
     visualizer_hal_stop_output fnp_visualizer_stop_output_ = nullptr;
     std::map<audio_devices_t, pal_device_id_t> android_device_map_;
     std::map<audio_patch_handle_t, AudioPatch*> patch_map_;
-    std::map<pal_device_id_t, audio_devices_t> pal_device_map_;
     int add_input_headset_if_usb_out_headset(int *device_count,  pal_device_id_t** pal_device_ids, bool conn_state);
 };
 

@@ -1173,7 +1173,6 @@ int AudioDevice::Init(hw_device_t **device, const hw_module_t *module) {
     current_rotation = PAL_SPEAKER_ROTATION_LR;
 
     FillAndroidDeviceMap();
-    FillPalDeviceMap();
     audio_extn_gef_init(adev_);
     adev_init_ref_count += 1;
 
@@ -2013,50 +2012,6 @@ char* AudioDevice::GetParameters(const char *keys) {
         }
     }
 
-    ret = str_parms_get_str(query, AUDIO_PARAMETER_KEY_MIC_OCCLUSION_INFO , value, sizeof(value));
-    if (ret >= 0) {
-        void *micInfo = nullptr;
-        std::string micOccInfoReply = "";
-        ret = pal_get_param(PAL_PARAM_ID_MIC_OCCLUSION_INFO,
-                            &micInfo, &size,
-                             nullptr);
-
-        auto micInfoVec = static_cast<std::vector<std::vector<pal_param_mic_occlusion_info_t>>*>(micInfo);
-
-        for (const auto& innerVector : *micInfoVec) {
-            micOccInfoReply += "{";
-            audio_devices_t dev_id = AUDIO_DEVICE_NONE;
-            micOccInfoReply += "Device:";
-            micOccInfoReply += getAndroidDevice(innerVector[0].id);
-            micOccInfoReply += "[";
-            for (int j = 0; j < innerVector.size(); j++) {
-                micOccInfoReply += "{";
-                micOccInfoReply += "MicType:";
-                if (j==0) {
-                    micOccInfoReply += "PrimaryMic";
-                } else {
-                    micOccInfoReply += "SecondaryMic";
-                }
-                micOccInfoReply += ",";
-                micOccInfoReply += " is_cur_occluded:";
-                micOccInfoReply += std::to_string(innerVector[j].is_occluded);
-                micOccInfoReply += ",";
-                micOccInfoReply += " num_of_occlusions:";
-                micOccInfoReply += std::to_string(innerVector[j].num_of_occlusion);
-                micOccInfoReply += ",";
-                micOccInfoReply += " num_of_recovery:";
-                micOccInfoReply += std::to_string(innerVector[j].num_of_recovery);
-                micOccInfoReply += "}";
-                micOccInfoReply += ",";
-            }
-            micOccInfoReply += "]";
-            micOccInfoReply += "}";
-        }
-        AHAL_DBG("%s: micInfo: %s",__func__, micOccInfoReply.c_str());
-        str_parms_add_str(reply, "mic_occlusion_info", micOccInfoReply.c_str());
-        delete micInfoVec;
-    }
-
     AudioExtn::audio_extn_get_parameters(adev_, query, reply);
     if (voice_)
         voice_->VoiceGetParameters(query, reply);
@@ -2073,17 +2028,6 @@ exit:
         AHAL_VERBOSE("exit: returns - %s", str);
 
     return str;
-}
-
-const char* AudioDevice::getAndroidDevice(pal_device_id_t id) {
-    if (pal_device_map_.find(id) != pal_device_map_.end()) {
-        for (int i = 0; i < ARRAY_SIZE(device_in_types); i++) {
-            if (device_in_types[i].value == pal_device_map_[id]) {
-                return device_in_types[i].name;
-            }
-        }
-    }
-    return "AUDIO_DEVICE_NONE";
 }
 
 void AudioDevice::FillAndroidDeviceMap() {
@@ -2154,32 +2098,6 @@ void AudioDevice::FillAndroidDeviceMap() {
     //android_device_map_.insert(std::make_pair(AUDIO_DEVICE_IN_DEFAULT, PAL_DEVICE_IN_DEFAULT));
 #ifdef EC_REF_CAPTURE_ENABLED
     android_device_map_.insert(std::make_pair(AUDIO_DEVICE_IN_ECHO_REFERENCE, PAL_DEVICE_IN_ECHO_REF));
-#endif
-}
-
-/* Presently only created for IN devices. */
-void AudioDevice::FillPalDeviceMap() {
-    pal_device_map_.clear();
-
-    /* go through all in devices and pushback */
-
-    pal_device_map_.insert(std::make_pair(PAL_DEVICE_IN_HANDSET_MIC, AUDIO_DEVICE_IN_BUILTIN_MIC));
-    pal_device_map_.insert(std::make_pair(PAL_DEVICE_IN_SPEAKER_MIC, AUDIO_DEVICE_IN_BACK_MIC));
-    pal_device_map_.insert(std::make_pair(PAL_DEVICE_IN_BLUETOOTH_SCO_HEADSET, AUDIO_DEVICE_IN_BLUETOOTH_SCO_HEADSET));
-    pal_device_map_.insert(std::make_pair(PAL_DEVICE_IN_WIRED_HEADSET, AUDIO_DEVICE_IN_WIRED_HEADSET));
-    pal_device_map_.insert(std::make_pair(PAL_DEVICE_IN_AUX_DIGITAL, AUDIO_DEVICE_IN_AUX_DIGITAL));
-    pal_device_map_.insert(std::make_pair(PAL_DEVICE_IN_HDMI, AUDIO_DEVICE_IN_HDMI));
-    pal_device_map_.insert(std::make_pair(PAL_DEVICE_IN_TELEPHONY_RX, AUDIO_DEVICE_IN_TELEPHONY_RX));
-    pal_device_map_.insert(std::make_pair(PAL_DEVICE_IN_USB_ACCESSORY, AUDIO_DEVICE_IN_USB_ACCESSORY));
-    pal_device_map_.insert(std::make_pair(PAL_DEVICE_IN_USB_DEVICE, AUDIO_DEVICE_IN_USB_HEADSET));
-    pal_device_map_.insert(std::make_pair(PAL_DEVICE_IN_FM_TUNER, AUDIO_DEVICE_IN_FM_TUNER));
-    pal_device_map_.insert(std::make_pair(PAL_DEVICE_IN_LINE, AUDIO_DEVICE_IN_LINE));
-    pal_device_map_.insert(std::make_pair(PAL_DEVICE_IN_SPDIF, AUDIO_DEVICE_IN_SPDIF));
-    pal_device_map_.insert(std::make_pair(PAL_DEVICE_IN_BLUETOOTH_A2DP, AUDIO_DEVICE_IN_BLUETOOTH_A2DP));
-    pal_device_map_.insert(std::make_pair(PAL_DEVICE_IN_PROXY, AUDIO_DEVICE_IN_PROXY));
-    pal_device_map_.insert(std::make_pair(PAL_DEVICE_IN_USB_HEADSET, AUDIO_DEVICE_IN_USB_HEADSET));
-#ifdef EC_REF_CAPTURE_ENABLED
-    pal_device_map_.insert(std::make_pair(PAL_DEVICE_IN_ECHO_REF, AUDIO_DEVICE_IN_ECHO_REFERENCE));
 #endif
 }
 

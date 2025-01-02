@@ -426,7 +426,7 @@ int equalizer_set_parameter(effect_context_t *context, effect_param_t *p,
         equalizer_set_preset(eq_ctxt, preset);
         break;
     case EQ_PARAM_BAND_LEVEL:
-        if (vsize < sizeof(int16_t)) {
+        if (vsize < sizeof(int32_t)) {
             p->status = -EINVAL;
             break;
         }

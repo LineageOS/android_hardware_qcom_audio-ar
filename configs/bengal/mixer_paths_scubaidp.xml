@@ -2514,12 +2514,6 @@
         <ctl name="ADC2 MUX" value="INP2" />
     </path>
 
-    <path name="ultrasound-mic">
-        <ctl name="TX_CDC_DMA_TX_4 Channels" value="One" />
-        <ctl name="TX_AIF2_CAP Mixer DEC3" value="1" />
-        <ctl name="TX DMIC MUX3" value="DMIC2" />
-    </path>
-
     <path name="dmic1">
         <ctl name="TX_CDC_DMA_TX_3 Channels" value="One" />
         <ctl name="TX_AIF1_CAP Mixer DEC2" value="1" />
