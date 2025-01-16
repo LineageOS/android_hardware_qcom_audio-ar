@@ -82,6 +82,8 @@ ifeq ($(call is-board-platform-in-list,kalama),true)
     AUDIO_MODULES += CDP_APQ_workspaceFileXml.qwsp
     AUDIO_MODULES += QRD_acdb_cal.acdb
     AUDIO_MODULES += QRD_workspaceFileXml.qwsp
+    AUDIO_MODULES += IOT_VC_acdb_cal.acdb
+    AUDIO_MODULES += IOT_VC_workspaceFileXml.qwsp
     AUDIO_MODULES += IDP_UPD_acdb_cal.acdb
     AUDIO_MODULES += IDP_UPD_workspaceFileXml.qwsp
     AUDIO_MODULES += GRD_acdb_cal.acdb

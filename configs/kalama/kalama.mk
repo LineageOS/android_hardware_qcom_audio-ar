@@ -138,6 +138,7 @@ PRODUCT_COPY_FILES += \
     $(CONFIG_PAL_SRC_DIR)/mixer_paths_kalama_cdp.xml:$(CONFIG_SKU_OUT_DIR)/mixer_paths_kalama_cdp.xml \
     $(CONFIG_PAL_SRC_DIR)/mixer_paths_kalama_cdp_apq.xml:$(CONFIG_SKU_OUT_DIR)/mixer_paths_kalama_cdp_apq.xml \
     $(CONFIG_PAL_SRC_DIR)/mixer_paths_kalama_cdp_wsa883x.xml:$(CONFIG_SKU_OUT_DIR)/mixer_paths_kalama_cdp_wsa883x.xml \
+    $(CONFIG_PAL_SRC_DIR)/mixer_paths_kalama_iot_vc.xml:$(CONFIG_SKU_OUT_DIR)/mixer_paths_kalama_iot_vc.xml \
     $(CONFIG_PAL_SRC_DIR)/mixer_paths_kalama_grd.xml:$(CONFIG_SKU_OUT_DIR)/mixer_paths_kalama_grd.xml \
     $(CONFIG_PAL_SRC_DIR)/mixer_paths_kalama_rb5_gen2_dvt.xml:$(CONFIG_SKU_OUT_DIR)/mixer_paths_kalama_rb5_gen2_dvt.xml \
     $(CONFIG_PAL_SRC_DIR)/mixer_paths_kalama_rb5_gen2_vc.xml:$(CONFIG_SKU_OUT_DIR)/mixer_paths_kalama_rb5_gen2_vc.xml \
@@ -146,6 +147,7 @@ PRODUCT_COPY_FILES += \
     $(CONFIG_PAL_SRC_DIR)/resourcemanager_kalama_mtp.xml:$(CONFIG_SKU_OUT_DIR)/resourcemanager_kalama_mtp.xml \
     $(CONFIG_PAL_SRC_DIR)/resourcemanager_kalama_mtp_apq.xml:$(CONFIG_SKU_OUT_DIR)/resourcemanager_kalama_mtp_apq.xml \
     $(CONFIG_PAL_SRC_DIR)/resourcemanager_kalama_cdp.xml:$(CONFIG_SKU_OUT_DIR)/resourcemanager_kalama_cdp.xml \
+    $(CONFIG_PAL_SRC_DIR)/resourcemanager_kalama_iot_vc.xml:$(CONFIG_SKU_OUT_DIR)/resourcemanager_kalama_iot_vc.xml \
     $(CONFIG_PAL_SRC_DIR)/resourcemanager_kalama_cdp_apq.xml:$(CONFIG_SKU_OUT_DIR)/resourcemanager_kalama_cdp_apq.xml \
     $(CONFIG_PAL_SRC_DIR)/resourcemanager_kalama_rb5_gen2_dvt.xml:$(CONFIG_SKU_OUT_DIR)/resourcemanager_kalama_rb5_gen2_dvt.xml \
     $(CONFIG_PAL_SRC_DIR)/resourcemanager_kalama_rb5_gen2_vc.xml:$(CONFIG_SKU_OUT_DIR)/resourcemanager_kalama_rb5_gen2_vc.xml \
