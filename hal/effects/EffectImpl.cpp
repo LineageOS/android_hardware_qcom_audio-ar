@@ -34,16 +34,48 @@ using aidl::android::hardware::audio::effect::State;
 using aidl::android::media::audio::common::PcmType;
 using ::android::hardware::EventFlag;
 using ::aidl::android::hardware::audio::effect::kEventFlagNotEmpty;
+using ::aidl::android::hardware::audio::effect::kDestroyAnyStateSupportedVersion;
 
 extern "C" binder_exception_t destroyEffect(const std::shared_ptr<IEffect>& instanceSp) {
-    State state;
-    ndk::ScopedAStatus status = instanceSp->getState(&state);
-    if (!status.isOk() || State::INIT != state) {
+    if (!instanceSp) {
+        LOG(ERROR) << __func__ << " nullptr";
+        return EX_ILLEGAL_ARGUMENT;
+    }
+
+    Descriptor desc;
+    ndk::ScopedAStatus status = instanceSp->getDescriptor(&desc);
+    if (!status.isOk()) {
         LOG(ERROR) << __func__ << " instance " << instanceSp.get()
+                   << " failed to get descriptor, status: " << status.getDescription();
+        return EX_ILLEGAL_STATE;
+    }
+
+    State state;
+    status = instanceSp->getState(&state);
+    if (!status.isOk()) {
+        LOG(ERROR) << __func__ << " " << desc.common.name << " instance " << instanceSp.get()
                    << " in state: " << toString(state) << ", status: " << status.getDescription();
         return EX_ILLEGAL_STATE;
     }
-    LOG(VERBOSE) << __func__ << " instance " << instanceSp.get() << " destroyed";
+
+    int effectVersion = 0;
+    if (!instanceSp->getInterfaceVersion(&effectVersion).isOk()) {
+        LOG(WARNING) << __func__ << " " << desc.common.name << " failed to get interface version";
+    }
+
+    if (effectVersion < kDestroyAnyStateSupportedVersion) {
+        if (State::INIT != state) {
+            LOG(ERROR) << __func__ << " " << desc.common.name << " can not destroy instance "
+                       << instanceSp.get() << " in state: " << toString(state);
+            return EX_ILLEGAL_STATE;
+        }
+    } else {
+        instanceSp->command(CommandId::RESET);
+        instanceSp->close();
+    }
+
+    LOG(VERBOSE) << __func__ << " " << desc.common.name << " instance " << instanceSp.get()
+               << " destroyed";
     return EX_NONE;
 }
 
