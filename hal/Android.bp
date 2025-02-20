@@ -79,6 +79,9 @@ target_board_platform_cc_library_shared {
     }) + select(soong_config_variable("qtiaudio", "feature_instance_id"), {
         "true": ["-DINSTANCE_ID_ENABLED"],
         default: [],
+    }) + select(soong_config_variable("qtiaudio", "ultrasound_proximity"), {
+        "true": ["-DAUDIO_ULTRASOUND_PROXIMITY_ENABLED"],
+        default: [],
     }) + select(soong_config_variable("ANDROID", "target_board_platform"), {
         any @ board_platform: ["-DSOUND_TRIGGER_PLATFORM_NAME=\"" + board_platform + "\""],
         default: ["-DSOUND_TRIGGER_PLATFORM_NAME=\"qcom\""],
@@ -94,7 +97,10 @@ target_board_platform_cc_library_shared {
         "audio_extn/Gain.cpp",
         "audio_extn/Gef.cpp",
         "audio_extn/soundtrigger.cpp",
-    ],
+    ] + select(soong_config_variable("qtiaudio", "ultrasound_proximity"), {
+        "true": ["audio_extn/UltrasoundProximity.cpp"],
+        default: [],
+    }),
 
     include_dirs: [
         "system/media/audio_effects/include",
@@ -107,7 +113,10 @@ target_board_platform_cc_library_shared {
         "libaudio_extn_headers",
         "libaudio_system_headers",
         "libhardware_headers",
-    ],
+    ] + select(soong_config_variable("qtiaudio", "ultrasound_proximity"), {
+        "true": ["libspf-headers"],
+        default: [],
+    }),
 
     shared_libs: [
         "android.hidl.allocator@1.0",
