@@ -340,6 +340,9 @@ static void hdr_get_parameters(std::shared_ptr<AudioDevice> adev,
 }
 
 AudioDevice::~AudioDevice() {
+#ifdef AUDIO_ULTRASOUND_PROXIMITY_ENABLED
+    audio_hal_con_thread_exit();
+#endif
     audio_extn_gef_deinit(adev_);
     audio_extn_sound_trigger_deinit(adev_);
     AudioExtn::battery_properties_listener_deinit();
@@ -1186,6 +1189,9 @@ int AudioDevice::Init(hw_device_t **device, const hw_module_t *module) {
     if (!parse_xml())
         mic_characteristics_available = true;
 
+#ifdef AUDIO_ULTRASOUND_PROXIMITY_ENABLED
+    audio_hal_con_thread_start();
+#endif
     return ret;
 }
 
@@ -1462,6 +1468,20 @@ int AudioDevice::SetParameters(const char *kvpairs) {
             ret = pal_set_param( PAL_PARAM_ID_SCREEN_STATE, (void*)&param_screen_st, sizeof(pal_param_screen_state_t));
         }
     }
+
+#ifdef AUDIO_ULTRASOUND_PROXIMITY_ENABLED
+    ret = str_parms_get_str(parms, "ultrasound-proximity", value, sizeof(value));
+    if (ret >= 0) {
+        val = atoi(value);
+        if (val < 2) {
+            AHAL_INFO("MIUS: ultrasound-proximity[%d]", val);
+            ultrasound_extn_enable(val == 1);
+        } else {
+            AHAL_INFO("MIUS: Unknown ultrasound enable parameter: %d", val);
+            str_parms_del(parms, "ultrasound-proximity");
+        }
+    }
+#endif
 
     ret = str_parms_get_str(parms, "UHQA", value, sizeof(value));
     if (ret >= 0) {
