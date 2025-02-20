@@ -141,5 +141,10 @@ endif
     LOCAL_SRC_FILES += audio_extn/Gef.cpp
 endif
 
+ifeq ($(strip $(AUDIO_FEATURE_ENABLED_ULTRASOUND_PROXIMITY)),true)
+    LOCAL_CFLAGS += -DAUDIO_ULTRASOUND_PROXIMITY_ENABLED
+    LOCAL_SRC_FILES += audio_extn/UltrasoundProximity.cpp
+endif
+
 include $(BUILD_SHARED_LIBRARY)
 endif
