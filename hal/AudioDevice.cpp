@@ -56,6 +56,9 @@
 #include <map>
 #include<algorithm>
 
+#include <cutils/sockets.h>
+#include <sys/epoll.h>
+
 #include "PalApi.h"
 #include "PalDefs.h"
 
@@ -338,7 +341,451 @@ static void hdr_get_parameters(std::shared_ptr<AudioDevice> adev,
     }
 }
 
+pthread_t g_audio_hal_con;
+int control_socket_fd = -1;
+int pipe_fds[2] = {-1, -1};  // [0] for reading, [1] for writing
+int epoll_fd = -1;
+bool is_thread_running = false;
+static void* notify_ultrasound_lib_handle = nullptr;
+static void (*ultraSoundEventPut)(int event) = nullptr;
+
+void* ConThreadProcess(void* param) {
+    // int epoll_fd = *((int *)param + 3);  // Epoll file descriptor
+    // int server_fd = *((int *)param + 2); // Server socket file descriptor
+    int client_fds[3] = {-1, -1, -1};  // Client socket file descriptors
+    int max_clients = 3;               // Maximum allowed clients
+    int client_count = 0;
+
+    struct epoll_event events[5];  // Events array for epoll_wait
+    int num_events, i, client_fd, bytes_read;
+    char buffer[72];
+
+    AHAL_INFO("MIUS: ConThreadProcess() enter\n");
+
+    while (1) {
+        num_events = epoll_wait(epoll_fd, events, 5, -1);
+
+        if (num_events == -1) {
+            if (errno == EINTR) continue;
+            AHAL_INFO("MIUS: epoll_wait failed (errno=%d %s)\n", errno, strerror(errno));
+            AHAL_INFO("MIUS: ConThreadProcess() exit\n");
+            return NULL;
+        }
+
+        for (i = 0; i < num_events; i++) {
+            int event_fd = events[i].data.fd;
+            uint32_t event_flags = events[i].events;
+
+            // Handle new client connections
+            if (event_fd == control_socket_fd) {
+                if (event_flags & EPOLLIN) {
+                    client_fd = accept(control_socket_fd, NULL, NULL);
+                    if (client_fd < 0) {
+                        AHAL_INFO("MIUS: accept failed %d\n", client_fd);
+                    } else {
+                        AHAL_INFO("MIUS: Accepted client %d, total connections %d\n", client_fd,
+                                  client_count + 1);
+                        if (client_count < max_clients) {
+                            client_fds[client_count++] = client_fd;
+
+                            struct epoll_event client_event;
+                            client_event.events = EPOLLIN | EPOLLRDHUP;
+                            client_event.data.fd = client_fd;
+                            epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &client_event);
+                        } else {
+                            AHAL_INFO("MIUS: Client connections full\n");
+                            close(client_fd);
+                        }
+                    }
+                } else if (event_flags & (EPOLLHUP | EPOLLERR)) {
+                    AHAL_INFO("MIUS: EPOLLHUP on server socket\n");
+                }
+            }
+            // Handle pipe messages (exit signal)
+            else if (event_fd == epoll_fd) {
+                if (event_flags & EPOLLIN) {
+                    read(event_fd, buffer, 1);
+                    if (buffer[0] == '\0') {
+                        AHAL_INFO("MIUS: thread exit\n");
+                        pthread_exit(NULL);
+                    }
+                }
+            }
+            // Handle client messages
+            else {
+                if (event_flags & EPOLLIN) {
+                    bytes_read = read(event_fd, buffer, sizeof(buffer));
+                    AHAL_INFO("MIUS: Read %d bytes", bytes_read);
+                    for (int i = 0; i < bytes_read; i++) {
+                        AHAL_VERBOSE("MIUS: buffer[%d] = 0x%x", i, buffer[i]);
+                    }
+                    if (bytes_read == 0) {
+                        AHAL_INFO("MIUS: EOF on control data socket\n");
+                    } else if (bytes_read < 0) {
+                        AHAL_INFO("MIUS: control data socket read failed; errno=%d\n", errno);
+                    } else if (bytes_read != 72) {
+                        AHAL_INFO("MIUS: message too short %d\n", bytes_read);
+                    } else {
+                        AHAL_INFO("MIUS: Received message from client %d\n", event_fd);
+
+                        if (buffer[0] == '*') {  // Ultrasound command
+                            int cmd = buffer[8];
+                            AHAL_INFO("MIUS: Received ULTRASOUND_ENABLE_CMD, payload[%d]\n", cmd);
+                            std::shared_ptr<AudioDevice> adevice = AudioDevice::GetInstance();
+                            if (!adevice) {
+                                AHAL_ERR("invalid adevice object");
+                            }
+                            if (cmd == 0) {
+                                AHAL_INFO("MIUS: Disabling ultrasound proximity\n");
+                                // (**(code **)(lVar6 + 0x10))(0,"ultrasound-proximity=0");
+                                adevice->SetParameters("ultrasound-proximity=0");
+
+                            } else if (cmd == 1) {
+                                AHAL_INFO("MIUS: Enabling ultrasound proximity\n");
+                                // (**(code **)(lVar6 + 0x10))(0,"ultrasound-proximity=1");
+                                adevice->SetParameters("ultrasound-proximity=1");
+                            } else {
+                                AHAL_INFO("MIUS: Unknown payload %d\n", cmd);
+                            }
+                        } else {
+                            AHAL_INFO("MIUS: Unknown command code\n");
+                        }
+                        buffer[0] = 1;
+                        write(event_fd, buffer, 2);
+                    }
+                }
+                if (event_flags & (EPOLLHUP | EPOLLERR)) {
+                    AHAL_INFO("MIUS: EPOLLHUP on client socket %d\n", event_fd);
+                    epoll_ctl(epoll_fd, EPOLL_CTL_DEL, event_fd, NULL);
+                    close(event_fd);
+                    for (int j = 0; j < client_count; j++) {
+                        if (client_fds[j] == event_fd) {
+                            client_fds[j] = -1;
+                            break;
+                        }
+                    }
+                    client_count--;
+                }
+            }
+        }
+    }
+}
+
+void audio_hal_con_thread_start() {
+    AHAL_INFO("MIUS: %s() enter", __func__);
+
+    const char* lib_path = "libultrasound_notify.so";
+
+    // Open the library
+    notify_ultrasound_lib_handle = dlopen(lib_path, RTLD_NOW);
+    if (!notify_ultrasound_lib_handle) {
+        AHAL_ERR("Failed to load %s: %s", lib_path, dlerror());
+        return;
+    }
+
+    // Load the ultraSoundEventPut function
+    ultraSoundEventPut = (void (*)(int))dlsym(notify_ultrasound_lib_handle, "ultraSoundEventPut");
+    if (!ultraSoundEventPut) {
+        AHAL_ERR("Failed to load ultraSoundEventPut from %s: %s", lib_path, dlerror());
+        dlclose(notify_ultrasound_lib_handle);
+        notify_ultrasound_lib_handle = nullptr;
+        return;
+    }
+
+    if (pipe(pipe_fds) < 0) {
+        AHAL_ERR("MIUS: %s() pipe failed (%s)", __func__, strerror(errno));
+        return;
+    }
+
+    control_socket_fd = android_get_control_socket("audio_us_socket_0");
+    if (control_socket_fd < 0) {
+        AHAL_ERR("MIUS: %s() Failed to get control socket", __func__);
+        return;
+    }
+
+    if (listen(control_socket_fd, 1) < 0) {
+        AHAL_ERR("MIUS: %s() listen error %s", __func__, strerror(errno));
+        return;
+    }
+
+    epoll_fd = epoll_create(5);
+    if (epoll_fd < 0) {
+        AHAL_ERR("MIUS: %s() epoll_create failed %s", __func__, strerror(errno));
+        return;
+    }
+
+    struct epoll_event event;
+    event.events = EPOLLIN;
+    event.data.fd = control_socket_fd;
+    if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, control_socket_fd, &event) < 0) {
+        AHAL_ERR("MIUS: %s() epoll_ctl failed %s", __func__, strerror(errno));
+        return;
+    }
+
+    event.data.fd = pipe_fds[0];
+    if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, pipe_fds[0], &event) < 0) {
+        AHAL_ERR("MIUS: %s() epoll_ctl failed %s", __func__, strerror(errno));
+        return;
+    }
+
+    if (pthread_create(&g_audio_hal_con, nullptr, ConThreadProcess, &g_audio_hal_con) != 0) {
+        AHAL_ERR("MIUS: %s() pthread_create failed %s", __func__, strerror(errno));
+        return;
+    }
+
+    is_thread_running = true;
+    AHAL_INFO("MIUS: %s() success", __func__);
+    AHAL_INFO("MIUS: %s() exit", __func__);
+}
+
+int audio_hal_con_thread_exit() {
+    AHAL_INFO("MIUS: %s() enter", __func__);
+
+    if (notify_ultrasound_lib_handle) {
+        dlclose(notify_ultrasound_lib_handle);
+        notify_ultrasound_lib_handle = nullptr;
+        ultraSoundEventPut = nullptr;
+        AHAL_INFO("Unloaded libnotify_ultrasound.so");
+    }
+
+    if (is_thread_running) {
+        char exit_signal = 0;
+        write(pipe_fds[1], &exit_signal, 1);
+
+        // Wait for the thread to exit
+        pthread_join(g_audio_hal_con, nullptr);
+
+        // Close all open sockets and file descriptors
+        if (control_socket_fd != -1) {
+            close(control_socket_fd);
+            control_socket_fd = -1;
+        }
+
+        if (pipe_fds[0] != -1) {
+            close(pipe_fds[0]);
+            pipe_fds[0] = -1;
+        }
+
+        if (pipe_fds[1] != -1) {
+            close(pipe_fds[1]);
+            pipe_fds[1] = -1;
+        }
+
+        if (epoll_fd != -1) {
+            close(epoll_fd);
+            epoll_fd = -1;
+        }
+
+        is_thread_running = false;
+        AHAL_INFO("MIUS: %s() exit", __func__);
+    } else {
+        AHAL_INFO("MIUS: %s(): Thread is not running, returning.", __func__);
+    }
+
+    return 0;
+}
+
+static struct pal_stream_attributes* stream_attributes;
+static struct pal_device* pal_devices;
+static pal_stream_handle_t* pal_stream;
+#define EVENT_ID_GENERIC_US_DETECTION 0x08001358
+
+static int32_t HandleCallbackForUPD(pal_stream_handle_t* stream_handle, uint32_t event_id,
+                                    uint32_t* event_data, uint32_t event_size, uint64_t cookie) {
+    int32_t status = 0;
+
+    if (event_id == EVENT_ID_GENERIC_US_DETECTION) {
+        if (*event_data == 1) {
+            AHAL_INFO("Event Detected : Near event received\n");
+            ultraSoundEventPut(0);
+        } else if (*event_data == 2) {
+            AHAL_INFO("Event Detected : Far event received\n");
+            ultraSoundEventPut(1);
+        } else {
+            AHAL_INFO("Event Detected : Invalid event %d\n", *event_data);
+        }
+    }
+    return status;
+}
+
+pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+int upd_state_count = 0;
+
+void* AsyncStartThreadLoop(void* param) {
+    int32_t status = 0;
+    pal_param_payload* param_payload = NULL;
+    pal_param_upd_event_detection_t payload;
+    int32_t no_of_devices = 2;
+
+    pthread_detach(pthread_self());
+    AHAL_INFO("MIUS: AsyncStartThreadLoop() enter");
+
+    pthread_mutex_lock(&lock);
+    if (upd_state_count > 0) {
+        pthread_mutex_unlock(&lock);
+        pthread_exit(nullptr);
+    }
+
+    AHAL_INFO("MIUS: ultrasound-proximity start async begin");
+
+    // setting stream attributes
+    stream_attributes =
+            (struct pal_stream_attributes*)calloc(1, sizeof(struct pal_stream_attributes));
+    if (!stream_attributes) goto exit;
+
+    stream_attributes->type = PAL_STREAM_ULTRASOUND;
+    stream_attributes->direction = PAL_AUDIO_INPUT_OUTPUT;
+
+    // setting device attriutes
+    //  device attributes for UPD will be set based on BE used.
+    pal_devices = (struct pal_device*)calloc(no_of_devices, sizeof(struct pal_device));
+
+    pal_devices[0].id = PAL_DEVICE_OUT_ULTRASOUND;
+    pal_devices[0].config.sample_rate = 96000;
+
+    pal_devices[1].id = PAL_DEVICE_IN_ULTRASOUND_MIC;
+    pal_devices[1].config.sample_rate = 96000;
+
+    status = pal_stream_open(stream_attributes, no_of_devices, pal_devices, 0, NULL,
+                             (pal_stream_callback)&HandleCallbackForUPD, 0, &pal_stream);
+    if (status) {
+        AHAL_ERR("MIUS: Error:Failed to open UPD stream\n");
+        goto exit;
+    }
+    AHAL_ERR("MIUS: Stream Opened succesfully\n");
+
+    param_payload = (pal_param_payload*)calloc(
+            1, sizeof(pal_param_payload) + sizeof(pal_param_upd_event_detection_t));
+    if (!param_payload) goto exit;
+
+    payload.register_status = 1;
+    param_payload->payload_size = sizeof(pal_param_upd_event_detection_t);
+    memcpy(param_payload->payload, &payload, param_payload->payload_size);
+    status = pal_stream_set_param(pal_stream, PAL_PARAM_ID_UPD_REGISTER_FOR_EVENTS, param_payload);
+    if (status) {
+        AHAL_ERR("MIUS: setParams failed");
+        goto close_stream;
+    }
+
+    status = pal_stream_start(pal_stream);
+    if (status) {
+        AHAL_ERR("MIUS: Error:Failed to Start UPD");
+        goto close_stream;
+    }
+    goto exit;
+close_stream:
+    pal_stream_close(pal_stream);
+    pal_stream = NULL;
+exit:
+    if (param_payload) free(param_payload);
+    // if (stream_attributes) free(stream_attributes);
+
+    upd_state_count++;
+    pthread_mutex_unlock(&lock);
+    AHAL_INFO("MIUS: AsyncStartThreadLoop() exit");
+
+    pthread_exit(nullptr);
+
+    return NULL;
+}
+
+void* DelayStopThreadLoop(void* param) {
+    pal_param_payload* param_payload = NULL;
+    pal_ultrasound_rampdown_param payload;
+    int32_t status = 0;
+    int stop_latency, result;
+    pthread_detach(pthread_self());
+    AHAL_INFO("MIUS: DelayStopThreadLoop() enter");
+
+    int delay_ms = property_get_int32("vendor.audio.ultrasound.usync", 1000);
+    usleep(delay_ms * 1000);
+
+    pthread_mutex_lock(&lock);
+    if (upd_state_count != 1) {
+        pthread_mutex_unlock(&lock);
+        pthread_exit(nullptr);
+    }
+
+    // Send ramp-down event
+    param_payload = (pal_param_payload*)calloc(
+            1, sizeof(pal_param_payload) + sizeof(pal_ultrasound_rampdown_param));
+    if (!param_payload) goto exit;
+
+    payload.rampdown_param = 0xA1000001;
+    param_payload->payload_size = sizeof(pal_ultrasound_rampdown_param);
+    memcpy(param_payload->payload, &payload, param_payload->payload_size);
+
+    AHAL_ERR("MIUS: _ultrasound_notify_rampdown() before");
+    result = pal_stream_set_param(pal_stream, PAL_PARAM_ID_UPD_NOTIFY_MSG, param_payload);
+    if (result != 0) {
+        AHAL_ERR("MIUS: _ultrasound_notify_rampdown() failed");
+    } else {
+        AHAL_INFO("MIUS: _ultrasound_notify_rampdown() success");
+    }
+
+    stop_latency = property_get_int32("vendor.audio.ultrasound.stoplatency", 75);
+    usleep(stop_latency * 1000);
+
+    AHAL_INFO("MIUS: ultrasound-proximity stop async begin");
+
+    // Stop and close the ultrasound stream
+    if (pal_stream) {
+        status = pal_stream_stop(pal_stream);
+        if (status) {
+            AHAL_ERR("pal_stream_stop failed\n");
+        }
+
+        status = pal_stream_close(pal_stream);
+        if (status) {
+            AHAL_ERR("pal_stream_close failed\n");
+        }
+        pal_stream = NULL;
+        if (stream_attributes) free(stream_attributes);
+        if (pal_devices) free(pal_devices);
+    }
+
+    AHAL_ERR("Exit StopAndCloseUltrasound\n");
+
+    AHAL_INFO("MIUS: ultrasound-proximity stop async end");
+    upd_state_count--;
+
+    pthread_mutex_unlock(&lock);
+    AHAL_INFO("MIUS: DelayStopThreadLoop() exit");
+
+    pthread_exit(nullptr);
+
+exit:
+    free(param_payload);
+
+    return NULL;
+}
+
+pthread_t async_start_thread;
+pthread_t delay_stop_thread;
+
+int ultrasound_extn_enable(bool enable) {
+    int result;
+    if (enable) {
+        result = pthread_create(&async_start_thread, nullptr, AsyncStartThreadLoop, nullptr);
+        if (result == 0) {
+            AHAL_INFO("MIUS: _ultrasound_start_async() success");
+            return 0;
+        }
+        AHAL_ERR("MIUS: _ultrasound_start_async() failed %s", strerror(errno));
+    } else {
+        result = pthread_create(&delay_stop_thread, nullptr, DelayStopThreadLoop, nullptr);
+        if (result == 0) {
+            AHAL_INFO("MIUS: _ultrasound_stop_async() success");
+            return 0;
+        }
+        AHAL_ERR("MIUS: _ultrasound_stop_async() failed %s", strerror(errno));
+    }
+
+    return result;
+}
+
 AudioDevice::~AudioDevice() {
+    audio_hal_con_thread_exit();
     audio_extn_gef_deinit(adev_);
     audio_extn_sound_trigger_deinit(adev_);
     AudioExtn::battery_properties_listener_deinit();
@@ -1182,6 +1629,8 @@ int AudioDevice::Init(hw_device_t **device, const hw_module_t *module) {
     if (!parse_xml())
         mic_characteristics_available = true;
 
+    audio_hal_con_thread_start();
+
     return ret;
 }
 
@@ -1416,6 +1865,18 @@ int AudioDevice::SetParameters(const char *kvpairs) {
             AHAL_DBG(" - screen = off");
             param_screen_st.screen_state = false;
             ret = pal_set_param( PAL_PARAM_ID_SCREEN_STATE, (void*)&param_screen_st, sizeof(pal_param_screen_state_t));
+        }
+    }
+
+    ret = str_parms_get_str(parms, "ultrasound-proximity", value, sizeof(value));
+    if (ret >= 0) {
+        val = atoi(value);
+        if (val < 2) {
+            AHAL_INFO("MIUS: ultrasound-proximity[%d]", val);
+            ultrasound_extn_enable(val == 1);
+        } else {
+            AHAL_INFO("MIUS: Unknown ultrasound enable parameter: %d", val);
+            str_parms_del(parms, "ultrasound-proximity");
         }
     }
 
