@@ -94,3 +94,9 @@ extern "C" int audio_extn_gef_store_audio_cal(void* data, int length);
 extern "C" int audio_extn_gef_retrieve_audio_cal(void* data, int *length);
 
 #endif /* AUDIO_GENERIC_EFFECT_FRAMEWORK_ENABLED */
+
+#ifdef AUDIO_ULTRASOUND_PROXIMITY_ENABLED
+int audio_hal_con_thread_exit();
+void audio_hal_con_thread_start();
+int ultrasound_extn_enable(bool enable);
+#endif /* AUDIO_ULTRASOUND_PROXIMITY_ENABLED */
