@@ -171,6 +171,10 @@ PRODUCT_COPY_FILES += \
     $(CONFIG_PAL_SRC_DIR)/resourcemanager_volcano_cdp_wsa883x_wcd939x_wcn6450.xml:$(CONFIG_SKU_OUT_DIR)/resourcemanager_volcano_cdp_wsa883x_wcd939x_wcn6450.xml \
     $(CONFIG_PAL_SRC_DIR)/resourcemanager_volcano_mtp_wsa883x_wcd939x_wcn6450.xml:$(CONFIG_SKU_OUT_DIR)/resourcemanager_volcano_mtp_wsa883x_wcd939x_wcn6450.xml \
     $(CONFIG_PAL_SRC_DIR)/resourcemanager_volcano_mtp_wsa883x_wcn6450.xml:$(CONFIG_SKU_OUT_DIR)/resourcemanager_volcano_mtp_wsa883x_wcn6450.xml \
+    $(CONFIG_PAL_SRC_DIR)/mixer_paths_volcano_cdp_wsa883x_wcd939x_wcn.xml:$(CONFIG_SKU_OUT_DIR)/mixer_paths_volcano_cdp_wsa883x_wcd939x_wcn.xml \
+    $(CONFIG_PAL_SRC_DIR)/mixer_paths_volcano_mtp_wsa883x_wcd939x_wcn.xml:$(CONFIG_SKU_OUT_DIR)/mixer_paths_volcano_mtp_wsa883x_wcd939x_wcn.xml \
+    $(CONFIG_PAL_SRC_DIR)/resourcemanager_volcano_cdp_wsa883x_wcd939x_wcn.xml:$(CONFIG_SKU_OUT_DIR)/resourcemanager_volcano_cdp_wsa883x_wcd939x_wcn.xml \
+    $(CONFIG_PAL_SRC_DIR)/resourcemanager_volcano_mtp_wsa883x_wcd939x_wcn.xml:$(CONFIG_SKU_OUT_DIR)/resourcemanager_volcano_mtp_wsa883x_wcd939x_wcn.xml \
 	$(CONFIG_PAL_SRC_DIR)/usecaseKvManager.xml:$(TARGET_COPY_OUT_VENDOR)/etc/usecaseKvManager.xml \
     vendor/qcom/opensource/audio-hal/primary-hal/configs/common/media_codecs_vendor_audio.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_vendor_audio.xml \
     frameworks/native/data/etc/android.hardware.audio.pro.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.audio.pro.xml \
