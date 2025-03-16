@@ -16,6 +16,23 @@
       "message": "If you need it restore, please let us know.",
       "revId": "083b45b1ebc6ab79f2726e6277afb7724251f9e8",
       "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "005c0318_123d5ad5",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 34454
+      },
+      "writtenOn": "2025-03-16T17:16:08Z",
+      "side": 1,
+      "message": "@bgcngm@gmail.com, thank you very much for a fast review and a link to similar patches! However, I don\u0027t see any way to prevent building `audio.primary.$(TARGET_BOARD_PLATFORM)` without it or some similar construction.\n\nIn the patch that you linked, there were several guards in the same Makefile. In the case considered here, I don\u0027t see any for preventing loading it unless I disable it all on parent level.\n\nNote that the similar guard is already in use in sm8550. See https://review.lineageos.org/c/LineageOS/android_hardware_qcom_audio-ar/+/404498 for example.\n\nWe need the same on sm8450. Context is Sony Xperia 1IV port (not finished yet) that requires `audio.primary.$(TARGET_BOARD_PLATFORM)`, as does an official Lineage Xperia 1V (sm8550) port.\n\nSo, please reconsider or maybe you can guide on how to approach it differently.",
+      "revId": "083b45b1ebc6ab79f2726e6277afb7724251f9e8",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
     }
   ],
   "submitRequirementResults": []
