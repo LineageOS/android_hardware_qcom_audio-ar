@@ -51,6 +51,23 @@
       "parentUuid": "005c0318_123d5ad5",
       "revId": "083b45b1ebc6ab79f2726e6277afb7724251f9e8",
       "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "88bdf30e_329f8c30",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 34454
+      },
+      "writtenOn": "2025-03-16T17:57:40Z",
+      "side": 1,
+      "message": "That\u0027s right, now I understand. Thank you for taking time.\n\nCould you tell how to proceed with it? We would still need this ability to guard against building primary audio HAL. Question is whether then the patch https://review.lineageos.org/c/LineageOS/android_hardware_qcom_audio-ar/+/405881 should be restored or some alternative suggested.",
+      "revId": "083b45b1ebc6ab79f2726e6277afb7724251f9e8",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
     }
   ],
   "submitRequirementResults": []
