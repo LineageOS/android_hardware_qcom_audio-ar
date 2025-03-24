@@ -76,8 +76,6 @@ LOCAL_SHARED_LIBRARIES := \
     libar-pal
 
 LOCAL_C_INCLUDES := \
-    $(TOP)/vendor/qcom/opensource/pal \
-    $(TOP)/vendor/qcom/opensource/audio-hal/primary-hal/hal \
     $(TOP)/external/expat/lib \
     $(TOP)/system/media/audio_utils/include \
     $(call include-path-for, audio-route) \
@@ -114,9 +112,6 @@ LOCAL_SHARED_LIBRARIES := \
     libar-pal
 
 LOCAL_C_INCLUDES := \
-    $(TOP)/vendor/qcom/opensource/pal \
-    $(TOP)/vendor/qcom/opensource/audio-hal/primary-hal/hal \
-    $(TOP)/vendor/qcom/opensource/audio-hal/primary-hal/hal/core/extensions/include \
     $(TOP)/external/expat/lib \
     $(TOP)/system/media/audio_utils/include \
     $(call include-path-for, audio-route) \
@@ -160,4 +155,3 @@ LOCAL_SHARED_LIBRARIES := \
 LOCAL_STATIC_LIBRARIES := libhealthhalutils
 
 include $(BUILD_SHARED_LIBRARY)
-
