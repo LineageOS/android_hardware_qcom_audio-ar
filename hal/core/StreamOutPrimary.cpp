@@ -53,8 +53,8 @@ StreamOutPrimary::StreamOutPrimary(StreamContext&& context, const SourceMetadata
       mTag(getUsecaseTag(getContext().getMixPortConfig())),
       mTagName(getName(mTag)),
       mFrameSizeBytes(getContext().getFrameSize()),
-      mMixPortConfig(getContext().getMixPortConfig()),
-      mPlaybackRate(sDefaultPlaybackRate) {
+      mPlaybackRate(sDefaultPlaybackRate),
+      mMixPortConfig(getContext().getMixPortConfig()) {
     if (mTag == Usecase::PRIMARY_PLAYBACK) {
         mExt.emplace<PrimaryPlayback>();
     } else if (mTag == Usecase::DEEP_BUFFER_PLAYBACK) {
