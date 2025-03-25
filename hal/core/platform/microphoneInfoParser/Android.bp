@@ -1,5 +1,8 @@
 cc_library_static {
     name: "libaudio_microphoneinfo_parser",
+    defaults: [
+        "latest_android_media_audio_common_types_ndk_shared",
+    ],
     vendor: true,
     export_include_dirs: ["include"],
     srcs: [
@@ -11,7 +14,6 @@ cc_library_static {
         "liblog",
         "libutils",
         "libxml2",
-        "android.media.audio.common.types-V4-ndk", // LATEST_ANDROID_MEDIA_ADUIO_COMMON_TYPES
     ],
     header_libs: [
         "libxsdc-utils",
