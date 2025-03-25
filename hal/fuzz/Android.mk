@@ -15,8 +15,8 @@ LOCAL_SHARED_LIBRARIES := \
     libcutils \
     libhardware \
     libutils \
-    android.media.audio.common.types-V3-ndk \
-    android.hardware.audio.core-V2-ndk \
+    $(LATEST_ANDROID_MEDIA_ADUIO_COMMON_TYPES) \
+    $(LATEST_ANDROID_HARDWARE_AUDIO_CORE) \
     libclang_rt.ubsan_standalone
 
 include $(BUILD_FUZZ_TEST)
