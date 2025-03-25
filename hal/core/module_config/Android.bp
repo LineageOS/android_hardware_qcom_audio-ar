@@ -1,6 +1,10 @@
 
 cc_library_static {
     name: "libaudio_module_config.qti",
+    defaults: [
+        "latest_android_hardware_audio_core_ndk_shared",
+        "latest_android_media_audio_common_types_ndk_shared",
+    ],
     vendor: true,
     export_include_dirs: ["include"],
     srcs: [
@@ -13,8 +17,6 @@ cc_library_static {
         "libstagefright_foundation",
         "libutils",
         "libxml2",
-        "android.media.audio.common.types-V4-ndk", // LATEST_ANDROID_MEDIA_ADUIO_COMMON_TYPES
-        "android.hardware.audio.core-V3-ndk", // LATEST_ANDROID_AUDIO_CORE
     ],
     header_libs: [
         "libxsdc-utils",

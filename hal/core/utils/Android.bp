@@ -1,5 +1,9 @@
 cc_library_static {
     name: "libaudiohalutils.qti",
+    defaults: [
+        "latest_android_hardware_audio_core_ndk_shared",
+        "latest_android_media_audio_common_types_ndk_shared",
+    ],
     owner: "qti",
     vendor: true,
 
@@ -20,8 +24,6 @@ cc_library_static {
     header_libs: ["libaudio_system_headers"],
 
     shared_libs: [
-        "android.hardware.audio.core-V2-ndk",
-        "android.media.audio.common.types-V3-ndk",
         "libaudioutils",
         "libbase",
         "libutils",
