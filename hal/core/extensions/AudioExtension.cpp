@@ -30,7 +30,7 @@ std::mutex AudioExtension::reconfig_wait_mutex_;
 bool BatteryListenerExtension::isCharging;
 
 AudioExtensionBase::AudioExtensionBase(std::string library, bool enabled)
-    : mLibraryName(library), mEnabled(enabled) {
+    : mEnabled(enabled), mLibraryName(library) {
     LOG(INFO) << __func__ << " opening " << mLibraryName.c_str() << " enabled " << enabled;
     if (mEnabled) {
         mHandle = dlopen(mLibraryName.c_str(), RTLD_LAZY);
