@@ -1,12 +1,14 @@
 cc_fuzz {
     name: "aidl_fuzzer_audio_core_hal",
+    defaults: [
+        "latest_android_hardware_audio_core_ndk_shared",
+        "latest_android_media_audio_common_types_ndk_shared",
+    ],
     vendor: true,
 
     srcs: ["fuzzer.cpp"],
 
     shared_libs: [
-        "android.hardware.audio.core-V2-ndk",
-        "android.media.audio.common.types-V3-ndk",
         "libbase",
         "libbinder",
         "libbinder_ndk",
