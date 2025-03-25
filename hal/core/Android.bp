@@ -1,5 +1,11 @@
 cc_library_shared {
     name: "libaudiocorehal.qti",
+    defaults: [
+        "latest_android_hardware_audio_core_ndk_shared",
+        "latest_android_hardware_audio_core_sounddose_ndk_shared",
+        "latest_android_hardware_audio_effect_ndk_shared",
+        "latest_android_media_audio_common_types_ndk_shared",
+    ],
     relative_install_path: "hw",
     vendor: true,
 
@@ -44,11 +50,7 @@ cc_library_shared {
     ],
 
     shared_libs: [
-        "android.hardware.audio.core-V2-ndk",
-        "android.hardware.audio.core.sounddose-V1-ndk",
-        "android.hardware.audio.effect-V2-ndk",
         "android.hardware.common-V2-ndk",
-        "android.media.audio.common.types-V3-ndk",
         "libar-pal",
         "libaudioplatformconverter.qti",
         "libaudioserviceexampleimpl",
@@ -81,6 +83,10 @@ cc_library_shared {
 
 cc_library_static {
     name: "libaudiocore.extension",
+    defaults: [
+        "latest_android_hardware_audio_core_ndk_shared",
+        "latest_android_media_audio_common_types_ndk_shared",
+    ],
     vendor: true,
 
     cflags: [
@@ -107,10 +113,8 @@ cc_library_static {
     ],
 
     shared_libs: [
-        "android.hardware.audio.core-V2-ndk",
         "android.hardware.common-V2-ndk",
         "android.hardware.common.fmq-V1-ndk",
-        "android.media.audio.common.types-V3-ndk",
         "libar-pal",
         "libbase",
         "libbinder_ndk",
@@ -127,6 +131,10 @@ cc_library_static {
 
 cc_library_static {
     name: "libaudioplatform.qti",
+    defaults: [
+        "latest_android_hardware_audio_core_ndk_shared",
+        "latest_android_media_audio_common_types_ndk_shared",
+    ],
     owner: "qti",
     vendor: true,
 
@@ -149,8 +157,6 @@ cc_library_static {
     ],
 
     shared_libs: [
-        "android.hardware.audio.core-V2-ndk",
-        "android.media.audio.common.types-V3-ndk",
         "libar-pal",
         "libaudioplatformconverter.qti",
         "libbase",
