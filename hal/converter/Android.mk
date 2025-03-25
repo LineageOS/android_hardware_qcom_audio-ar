@@ -17,8 +17,8 @@ LOCAL_SRC_FILES := \
 LOCAL_SHARED_LIBRARIES := \
     libbase \
     libstagefright_foundation \
-    android.hardware.audio.core-V2-ndk \
-    android.media.audio.common.types-V3-ndk \
+    $(LATEST_ANDROID_HARDWARE_AUDIO_CORE) \
+    $(LATEST_ANDROID_MEDIA_ADUIO_COMMON_TYPES) \
     libar-pal
 
 include $(BUILD_SHARED_LIBRARY)

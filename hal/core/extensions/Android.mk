@@ -29,10 +29,10 @@ LOCAL_SHARED_LIBRARIES := \
     libstagefright_foundation \
     libutils \
     libxml2 \
-    android.hardware.common-V2-ndk \
-    android.hardware.common.fmq-V1-ndk \
-    android.media.audio.common.types-V3-ndk \
-    android.hardware.audio.core-V2-ndk \
+    $(LATEST_ANDROID_HARDWARE_COMMON) \
+    $(LATEST_ANDROID_HARDWARE_COMMON_FMQ) \
+    $(LATEST_ANDROID_MEDIA_ADUIO_COMMON_TYPES) \
+    $(LATEST_ANDROID_HARDWARE_AUDIO_CORE) \
     qti-audio-types-aidl-V1-ndk \
     libar-pal
 

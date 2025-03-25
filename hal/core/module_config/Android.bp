@@ -5,6 +5,10 @@ cc_library_static {
     srcs: [
         "ModuleConfig.cpp",
     ],
+    defaults: [
+        "latest_android_media_audio_common_types_ndk_shared",
+        "latest_android_hardware_audio_core_ndk_shared",
+    ],
     shared_libs: [
         "libbase",
         "libcutils",
@@ -12,8 +16,6 @@ cc_library_static {
         "libstagefright_foundation",
         "libutils",
         "libxml2",
-        "android.media.audio.common.types-V3-ndk",
-        "android.hardware.audio.core-V2-ndk",
     ],
     header_libs: [
         "libxsdc-utils",
