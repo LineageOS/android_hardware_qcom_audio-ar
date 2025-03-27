@@ -24,6 +24,7 @@ AUDIO_AGM += libagm_compress_plugin
 AUDIO_AGM += agmcompresscap
 AUDIO_AGM += agmvoiceui
 AUDIO_AGM += agmhostless
+AUDIO_AGM += stt_meta_extract
 
 #PAL Service
 AUDIO_PAL += libpalclient
