@@ -2,6 +2,7 @@ CURRENT_PATH := $(call my-dir)
 
 LOCAL_PATH:= $(call my-dir)
 
+ifneq ($(TARGET_PROVIDES_AUDIO_HAL),true)
 # Build Header library to expose effect headers
 include $(CLEAR_VARS)
 LOCAL_MODULE := libaudioeffectsaidlqti_headers
@@ -57,3 +58,4 @@ LOCAL_HEADER_LIBRARIES:= $(EFFECTS_DEFAULTS_HEADERS_LIBRARIES)
 include $(BUILD_SHARED_LIBRARY)
 
 include $(CURRENT_PATH)/qcom-effects/Android.mk
+endif

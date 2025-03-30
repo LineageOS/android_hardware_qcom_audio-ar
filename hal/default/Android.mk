@@ -1,4 +1,5 @@
 LOCAL_PATH := $(call my-dir)
+ifneq ($(TARGET_PROVIDES_AUDIO_HAL),true)
 include $(CLEAR_VARS)
 
 LOCAL_MODULE            := libaudiocorehal.default
@@ -43,3 +44,4 @@ LOCAL_SHARED_LIBRARIES := \
 
 include $(BUILD_SHARED_LIBRARY)
 
+endif
