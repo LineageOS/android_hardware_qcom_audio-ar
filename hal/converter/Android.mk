@@ -1,5 +1,6 @@
 LOCAL_PATH := $(call my-dir)
 CURRENT_PATH := $(call my-dir)
+ifneq ($(TARGET_PROVIDES_AUDIO_HAL),true)
 include $(CLEAR_VARS)
 LOCAL_MODULE  := libaudioplatformconverter.qti
 LOCAL_MODULE_OWNER  := qti
@@ -22,3 +23,4 @@ LOCAL_SHARED_LIBRARIES := \
     libar-pal
 
 include $(BUILD_SHARED_LIBRARY)
+endif

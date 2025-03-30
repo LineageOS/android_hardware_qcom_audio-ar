@@ -2,6 +2,7 @@ ifneq ($(AUDIO_USE_STUB_HAL), true)
 LOCAL_PATH := $(call my-dir)
 CURRENT_PATH := $(call my-dir)
 
+ifneq ($(TARGET_PROVIDES_AUDIO_HAL),true)
 include $(CLEAR_VARS)
 
 LOCAL_MODULE            := libaudiocorehal.qti
@@ -87,6 +88,7 @@ LOCAL_SHARED_LIBRARIES := \
     libmediautils_vendor
 
 include $(BUILD_SHARED_LIBRARY)
+endif
 
 include $(CURRENT_PATH)/fuzzer/Android.mk
 include $(CURRENT_PATH)/extensions/Android.mk
