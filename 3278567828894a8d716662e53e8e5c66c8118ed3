@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f2e66a85_3fc68077",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 6
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 13648
+      },
+      "writtenOn": "2025-03-31T00:35:40Z",
+      "side": 1,
+      "message": "Why is this needed? If it is what I think, you can just override the service like we do in oplus/sm8550.",
+      "revId": "3278567828894a8d716662e53e8e5c66c8118ed3",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    }
+  ]
+}
