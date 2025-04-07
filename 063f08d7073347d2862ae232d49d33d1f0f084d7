@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "4fbb559e_55e2190b",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 6
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 33708
+      },
+      "writtenOn": "2025-04-07T07:23:56Z",
+      "side": 1,
+      "message": "If the volcano platform is officially supported, why not use project pathmap into volcano.mk?",
+      "revId": "063f08d7073347d2862ae232d49d33d1f0f084d7",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    }
+  ]
+}
