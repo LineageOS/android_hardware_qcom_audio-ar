@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b9eac442_d7f2baa7",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 33708
+      },
+      "writtenOn": "2025-04-07T07:09:18Z",
+      "side": 1,
+      "message": "I had not done s/PRODUCT_PROPERTY_OVERRIDES/PRODUCT_VENDOR_PROPERTIES/g in configs/vulcano/vulcano.mk",
+      "revId": "1d353f6834f044dd63f16bf7f89e219cf9db1232",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    }
+  ]
+}
