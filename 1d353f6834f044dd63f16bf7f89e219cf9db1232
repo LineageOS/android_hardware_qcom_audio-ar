@@ -34,6 +34,24 @@
       "parentUuid": "b9eac442_d7f2baa7",
       "revId": "1d353f6834f044dd63f16bf7f89e219cf9db1232",
       "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f40f0df0_7eb1bac7",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 33708
+      },
+      "writtenOn": "2025-04-07T09:21:48Z",
+      "side": 1,
+      "message": "If the volcano platform is officially supported, shouldn\u0027t the changes include that platform? As mentioned here: https://review.lineageos.org/c/LineageOS/android_hardware_qcom_audio-ar/+/425000/comments/4fbb559e_55e2190b",
+      "parentUuid": "060f39c5_1edc6f81",
+      "revId": "1d353f6834f044dd63f16bf7f89e219cf9db1232",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
     }
   ]
 }
