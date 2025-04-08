@@ -52,6 +52,23 @@
       "parentUuid": "060f39c5_1edc6f81",
       "revId": "1d353f6834f044dd63f16bf7f89e219cf9db1232",
       "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b40c8630_31544bd9",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 4550
+      },
+      "writtenOn": "2025-04-08T22:51:00Z",
+      "side": 1,
+      "message": "Does anyone even include these makefiles directly? They have so much bloat that you shouldn\u0027t, I find such changes pretty useless and they just cause unnecessary merge conflicts when merging upstream",
+      "revId": "1d353f6834f044dd63f16bf7f89e219cf9db1232",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
     }
   ]
 }
