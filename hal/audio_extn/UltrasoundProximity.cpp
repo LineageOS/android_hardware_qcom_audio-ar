@@ -335,6 +335,9 @@ close_stream:
 }
 
 static void* DelayStopThreadLoop(void* param) {
+    pal_param_payload* param_payload = NULL;
+    pal_param_upd_notify payload;
+    int stop_latency;
     int32_t status = 0;
 
     pthread_detach(pthread_self());
@@ -345,6 +348,26 @@ static void* DelayStopThreadLoop(void* param) {
     pthread_mutex_lock(&lock);
     if (upd_instance_count > 1) goto exit;
 
+    // Send ramp-down event
+    param_payload =
+            (pal_param_payload*)calloc(1, sizeof(pal_param_payload) + sizeof(pal_param_upd_notify));
+    if (!param_payload) goto stop_stream;
+
+    param_payload->payload_size = sizeof(pal_param_upd_notify);
+    payload.msg = PCM_DEEP_BUFFER;
+    memcpy(param_payload->payload, &payload, param_payload->payload_size);
+
+    status = pal_stream_set_param(pal_stream, PAL_PARAM_ID_UPD_NOTIFY_MSG, param_payload);
+    free(param_payload);
+    if (status) {
+        AHAL_ERR("Failed to start rampdown");
+        goto stop_stream;
+    }
+
+    stop_latency = property_get_int32("vendor.audio.ultrasound.stoplatency", 75);
+    usleep(stop_latency * 1000);
+
+stop_stream:
     if (pal_stream) {
         status = pal_stream_stop(pal_stream);
         if (status) {
