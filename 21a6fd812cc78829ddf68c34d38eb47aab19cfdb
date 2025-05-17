@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "91e27ebe_c11e678e",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 33800
+      },
+      "writtenOn": "2025-05-17T08:35:06Z",
+      "side": 1,
+      "message": "We are allowing use prebuilt vendor.qti.hardware.pal@1.0-impl, right? \nIf vendor.qti.hardware.pal@1.0-impl is a prebuilt binary, headers are missing for me.",
+      "revId": "21a6fd812cc78829ddf68c34d38eb47aab19cfdb",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    }
+  ]
+}
