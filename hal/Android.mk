@@ -14,15 +14,8 @@ include $(BUILD_HEADER_LIBRARY)
 ifneq ($(TARGET_PROVIDES_AUDIO_HAL),true)
 include $(CLEAR_VARS)
 
-ifeq ($(call is-board-platform-in-list,$(LOCAL_AUDIO_SERVICE_64)), true)
-ifneq ($(TARGET_BOARD_SUFFIX), _32go)
-LOCAL_MODULE       := android.hardware.audio.service_64.rc
-else
-LOCAL_MODULE       := android.hardware.audio.service.rc
-endif
-endif
-
-LOCAL_SRC_FILES    := $(LOCAL_MODULE)
+LOCAL_MODULE       := android.hardware.audio.service-qti.rc
+LOCAL_SRC_FILES    := android.hardware.audio.service.rc
 LOCAL_MODULE_TAGS  := optional
 LOCAL_MODULE_CLASS := ETC
 LOCAL_MODULE_PATH  := $(TARGET_OUT_VENDOR_ETC)/init
@@ -36,6 +29,7 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_OWNER := qti
 LOCAL_VENDOR_MODULE := true
 LOCAL_ARM_MODE := arm
+LOCAL_REQUIRED_MODULES := android.hardware.audio.service-qti.rc
 
 LOCAL_VINTF_FRAGMENTS := ../configs/common/manifest_non_qmaa.xml
 
