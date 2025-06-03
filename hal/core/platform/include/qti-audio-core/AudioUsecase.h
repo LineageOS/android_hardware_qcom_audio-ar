@@ -11,6 +11,8 @@
 #include <aidl/android/hardware/audio/common/SourceMetadata.h>
 #include <aidl/android/hardware/audio/core/IStreamCallback.h>
 #include <aidl/android/hardware/audio/core/IStreamOutEventCallback.h>
+#include <aidl/android/hardware/audio/core/MmapBufferDescriptor.h>
+#include <aidl/android/hardware/audio/core/StreamDescriptor.h>
 #include <aidl/android/hardware/audio/core/VendorParameter.h>
 #include <aidl/android/media/audio/common/AudioChannelLayout.h>
 #include <aidl/android/media/audio/common/AudioDevice.h>
@@ -19,20 +21,20 @@
 #include <aidl/android/media/audio/common/AudioPortConfig.h>
 #include <aidl/android/media/audio/common/Int.h>
 #include <android/binder_auto_utils.h>
+#include <qti-audio-core/Utils.h>
 
 #include <algorithm>
 #include <numeric>
 #include <unordered_set>
 
-#include <qti-audio-core/Utils.h>
-
-#define DIV_ROUND_UP(x, y) (((x) + (y) - 1) / (y))
-#define ALIGN(x, y) ((y) * DIV_ROUND_UP((x), (y)))
+#define DIV_ROUND_UP(x, y) (((x) + (y)-1) / (y))
+#define ALIGN(x, y) ((y)*DIV_ROUND_UP((x), (y)))
 #define DEFAULT_SAMPLE_RATE 48000
 namespace qti::audio::core {
 
 // forward declaration
 struct PlatformStreamCallback;
+struct MmapBufferImpl;
 
 enum class Usecase : uint16_t {
     INVALID = 0,
@@ -123,8 +125,8 @@ class UsecaseConfig {
         size_t frameCount = Usecase::getFrameCount(mixPortConfig);
         size_t frameSizeInBytes = 1;
         if (IsPcm) {
-            frameSizeInBytes = getFrameSizeInBytes(
-                    mixPortConfig.format.value(), mixPortConfig.channelMask.value());
+            frameSizeInBytes = getFrameSizeInBytes(mixPortConfig.format.value(),
+                                                   mixPortConfig.channelMask.value());
         }
         return frameCount * frameSizeInBytes;
     }
@@ -186,23 +188,72 @@ class UllPlayback : public UsecaseConfig<UllPlayback> {
 
 class MmapUsecaseBase {
   public:
+    /*
+     * Applicable for <=3 HAL core interface version.
+     * If Exposed, FWK can query for createMmapBuffer at anytime, to get mmap buffer.
+     * Without this mmap buffer will be only created open[Output/Input]Stream.
+     *
+     */
+    inline const static std::string kAospCreateMmapBuffer{"aosp.createMmapBuffer"};
+    MmapUsecaseBase(MmapBufferImpl* const streamImpl,
+                    const ::aidl::android::media::audio::common::AudioPortConfig& mixPortConfig,
+                    bool input)
+        : mIsInput(input), mMixPortConfig(mixPortConfig), mStreamImpl(streamImpl) {}
     virtual ~MmapUsecaseBase() {}
     virtual void setPalHandle(pal_stream_handle_t* handle);
-    virtual int32_t createMMapBuffer(int64_t frameSize, int32_t* fd, int64_t* burstSizeFrames,
-                                     int32_t* flags, int32_t* bufferSizeFrames);
-    virtual int32_t getMMapPosition(int64_t* frames, int64_t* timeNs);
+
+    virtual ndk::ScopedAStatus createMMapBuffer(
+            int64_t frameSize, ::aidl::android::hardware::audio::core::MmapBufferDescriptor* desc,
+            int32_t* bufferSizeFrames);
+
+    // creates or gets already created mmap buffer
+    // For create cases callsback to StreamIn/Out to use configureMmapStream
+    ndk::ScopedAStatus createOrGetMmapBuffer(
+            ::aidl::android::hardware::audio::core::MmapBufferDescriptor* desc);
+
+    virtual int32_t getMMapPosition(
+            ::aidl::android::hardware::audio::core::StreamDescriptor::Reply* reply);
+
     virtual int32_t start();
     virtual int32_t stop();
+    int32_t getLatency();
+
+    ndk::ScopedAStatus setVendorParameters(
+            const std::vector<::aidl::android::hardware::audio::core::VendorParameter>&
+                    in_parameters,
+            bool in_async);
+
+    ndk::ScopedAStatus getVendorParameters(
+            const std::vector<std::string>& in_ids,
+            std::vector<::aidl::android::hardware::audio::core::VendorParameter>* _aidl_return);
+
   protected:
     pal_stream_handle_t* mPalHandle{nullptr};
+    bool mIsInput{false};
     bool mIsStarted = false;
+    bool mClosed = true;  // assocaited with pal_stream_close, start moves to closed -> false,
     int64_t mFramesInSession = 0;
     /* cache the frames on stop*/
     int64_t mTotalFrames = 0;
+    const ::aidl::android::media::audio::common::AudioPortConfig& mMixPortConfig;
+    ::aidl::android::hardware::audio::core::MmapBufferDescriptor mMmapBufferDesc;
+
+    // should overlast usecase
+    MmapBufferImpl* const mStreamImpl;
+
+    ndk::ScopedAStatus fillDescriptor(
+            ::aidl::android::hardware::audio::core::MmapBufferDescriptor* desc);
+    ndk::ScopedAStatus getCachedMmapBuffer(
+            ::aidl::android::hardware::audio::core::MmapBufferDescriptor* desc);
+
+    bool isValid();
 };
 
 class MMapPlayback : public MmapUsecaseBase, public UsecaseConfig<MMapPlayback> {
   public:
+    MMapPlayback(MmapBufferImpl* const streamImpl,
+                 const ::aidl::android::media::audio::common::AudioPortConfig& mixPortConfig)
+        : MmapUsecaseBase(streamImpl, mixPortConfig, false) {}
     constexpr static size_t kPeriodDurationMs = 1;
     constexpr static size_t kPlatformDelayMs = 3;
     constexpr static uint32_t kPeriodCount = 512;
@@ -463,6 +514,9 @@ class UltraFastRecord : public UsecaseConfig<UltraFastRecord> {
 
 class MMapRecord : public MmapUsecaseBase, public UsecaseConfig<MMapRecord> {
   public:
+    MMapRecord(MmapBufferImpl* const streamImpl,
+               const ::aidl::android::media::audio::common::AudioPortConfig& mixPortConfig)
+        : MmapUsecaseBase(streamImpl, mixPortConfig, true) {}
     constexpr static uint32_t kCaptureDurationMs = 1;
     constexpr static size_t kPeriodCount = 512;
     constexpr static size_t kPlatformDelayMs = 4;

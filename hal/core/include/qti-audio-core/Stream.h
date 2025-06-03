@@ -22,8 +22,6 @@
 
 #pragma once
 
-
-
 #include <aidl/android/hardware/audio/common/SinkMetadata.h>
 #include <aidl/android/hardware/audio/common/SourceMetadata.h>
 #include <aidl/android/hardware/audio/core/BnStreamCommon.h>
@@ -36,9 +34,13 @@
 #include <aidl/android/media/audio/common/AudioIoFlags.h>
 #include <aidl/android/media/audio/common/AudioOffloadInfo.h>
 #include <aidl/android/media/audio/common/MicrophoneInfo.h>
-#include <extensions/AudioExtension.h>
 #include <error/expected_utils.h>
+#include <extensions/AudioExtension.h>
 #include <fmq/AidlMessageQueue.h>
+#include <qti-audio-core/ChildInterface.h>
+#include <qti-audio-core/Platform.h>
+#include <qti-audio-core/StreamWorker.h>
+#include <qti-audio-core/Utils.h>
 #include <system/thread_defs.h>
 #include <utils/Errors.h>
 
@@ -49,11 +51,6 @@
 #include <memory>
 #include <optional>
 #include <variant>
-
-#include <qti-audio-core/ChildInterface.h>
-#include <qti-audio-core/Platform.h>
-#include <qti-audio-core/Utils.h>
-#include <qti-audio-core/StreamWorker.h>
 
 namespace qti::audio::core {
 
@@ -182,6 +179,7 @@ class StreamContext {
     ReplyMQ* getReplyMQ() const { return mReplyMQ.get(); }
     int getTransientStateDelayMs() const { return mDebugParameters.transientStateDelayMs; }
     int getSampleRate() const { return mSampleRate; }
+    bool isMmap() const { return hasMmapFlag(mMixPortConfig.flags.value()); }
     bool isValid() const;
     // 'reset' is called on a Binder thread when closing the stream. Does not use
     // locking because it only cleans MQ pointers which were also set on the Binder thread.
@@ -366,6 +364,7 @@ class StreamInWorkerLogic : public StreamWorkerCommonLogic {
   private:
     bool read(size_t clientSize,
               ::aidl::android::hardware::audio::core::StreamDescriptor::Reply* reply);
+    bool readMmap(::aidl::android::hardware::audio::core::StreamDescriptor::Reply* reply);
 };
 using StreamInWorker = StreamWorkerImpl<StreamInWorkerLogic>;
 
@@ -385,7 +384,7 @@ class StreamOutWorkerLogic : public StreamWorkerCommonLogic {
   private:
     bool write(size_t clientSize,
                ::aidl::android::hardware::audio::core::StreamDescriptor::Reply* reply);
-
+    bool writeMmap(::aidl::android::hardware::audio::core::StreamDescriptor::Reply* reply);
     std::shared_ptr<::aidl::android::hardware::audio::core::IStreamOutEventCallback> mEventCallback;
 };
 using StreamOutWorker = StreamWorkerImpl<StreamOutWorkerLogic>;
@@ -444,9 +443,15 @@ struct StreamCommonInterface {
      * VOIP playback stream with HAC enabled Handset speaker.
      */
     virtual ndk::ScopedAStatus reconfigureConnectedDevices() = 0;
-    virtual ndk::ScopedAStatus configureMMapStream(int32_t* fd, int64_t* burstSizeFrames,
-                                                   int32_t* flags, int32_t* bufferSizeFrames) = 0;
-     virtual void setStreamMicMute(const bool muted) = 0;
+
+    virtual ndk::ScopedAStatus configureMMapStream(
+            ::aidl::android::hardware::audio::core::MmapBufferDescriptor* desc,
+            int32_t* bufferSizeFrames) = 0;
+
+    virtual ndk::ScopedAStatus createMmapBuffer(
+            ::aidl::android::hardware::audio::core::MmapBufferDescriptor* desc) = 0;
+
+    virtual void setStreamMicMute(const bool muted) = 0;
 };
 
 // This is equivalent to automatically generated 'IStreamCommonDelegator' but uses
@@ -505,6 +510,16 @@ class StreamCommonDelegator : public ::aidl::android::hardware::audio::core::BnS
         return delegate != nullptr ? delegate->removeEffect(in_effect)
                                    : ndk::ScopedAStatus::fromExceptionCode(EX_ILLEGAL_STATE);
     }
+
+    // TODO add override with v4
+    ndk::ScopedAStatus createMmapBuffer(
+            ::aidl::android::hardware::audio::core::MmapBufferDescriptor* desc)
+    /*override */ {
+        auto delegate = mDelegate.lock();
+        return delegate != nullptr ? delegate->createMmapBuffer(desc)
+                                   : ndk::ScopedAStatus::fromExceptionCode(EX_ILLEGAL_STATE);
+    }
+
     // It is possible that on the client side the proxy for IStreamCommon will
     // outlive the IStream* instance, and the server side IStream* instance will
     // get destroyed while this IStreamCommon instance is still alive.
@@ -557,9 +572,13 @@ class StreamCommonImpl : virtual public StreamCommonInterface, virtual public Dr
             const std::vector<::aidl::android::media::audio::common::AudioDevice>& devices)
             override;
     void setStreamMicMute(const bool muted) override;
-    ndk::ScopedAStatus configureMMapStream(int32_t* fd, int64_t* burstSizeFrames, int32_t* flags,
-                                           int32_t* bufferSizeFrames) override;
 
+    ndk::ScopedAStatus configureMMapStream(
+            ::aidl::android::hardware::audio::core::MmapBufferDescriptor* desc,
+            int32_t* bufferSizeFrames) override;
+
+    virtual ndk::ScopedAStatus createMmapBuffer(
+            ::aidl::android::hardware::audio::core::MmapBufferDescriptor* desc) override;
     // start of Equivalent of IStreamCallbacks
     void publishTransferReady() { mWorker->publishTransferReady(); }
 
@@ -736,10 +755,11 @@ class StreamWrapper {
         return;
     }
 
-    ndk::ScopedAStatus configureMMapStream(int32_t* fd, int64_t* burstSizeFrames, int32_t* flags,
-                                           int32_t* bufferSizeFrames) {
+    ndk::ScopedAStatus configureMMapStream(
+            ::aidl::android::hardware::audio::core::MmapBufferDescriptor* desc,
+            int32_t* bufferSizeFrames) {
         auto s = mStream.lock();
-        if (s) return s->configureMMapStream(fd, burstSizeFrames, flags, bufferSizeFrames);
+        if (s) return s->configureMMapStream(desc, bufferSizeFrames);
         return ndk::ScopedAStatus::fromExceptionCode(EX_ILLEGAL_STATE);
     }
 

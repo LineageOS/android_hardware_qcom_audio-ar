@@ -15,27 +15,28 @@
  */
 
 /*
- * Changes from Qualcomm Innovation Center, Inc. are provided under the following license:
- * Copyright (c) 2023-2025 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Changes from Qualcomm Technologies, Inc. are provided under the following license:
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
 #pragma once
 
 #include <aidl/android/hardware/audio/core/VendorParameter.h>
+#include <aidl/android/hardware/audio/effect/Descriptor.h>
 #include <aidl/android/media/audio/common/AudioDevice.h>
-#include <aidl/android/media/audio/common/AudioPortConfig.h>
-#include <aidl/android/media/audio/common/AudioMode.h>
 #include <aidl/android/media/audio/common/AudioInputFlags.h>
+#include <aidl/android/media/audio/common/AudioMode.h>
 #include <aidl/android/media/audio/common/AudioOutputFlags.h>
+#include <aidl/android/media/audio/common/AudioPortConfig.h>
 #include <aidl/qti/audio/core/VString.h>
 #include <system/audio.h>
+
 #include <algorithm>
 #include <map>
 #include <numeric>
 #include <set>
 #include <vector>
-
 
 namespace ndk {
 
@@ -418,6 +419,17 @@ constexpr int32_t frameCountFromDurationUs(long durationUs, int32_t sampleRateHz
 
 constexpr int32_t frameCountFromDurationMs(int32_t durationMs, int32_t sampleRateHz) {
     return frameCountFromDurationUs(durationMs * 1000, sampleRateHz);
+}
+
+constexpr bool hasMmapFlag(const ::aidl::android::media::audio::common::AudioIoFlags& flags) {
+    return (flags.getTag() == ::aidl::android::media::audio::common::AudioIoFlags::Tag::input &&
+            isBitPositionFlagSet(
+                    flags.get<::aidl::android::media::audio::common::AudioIoFlags::Tag::input>(),
+                    ::aidl::android::media::audio::common::AudioInputFlags::MMAP_NOIRQ)) ||
+           (flags.getTag() == ::aidl::android::media::audio::common::AudioIoFlags::Tag::output &&
+            isBitPositionFlagSet(
+                    flags.get<::aidl::android::media::audio::common::AudioIoFlags::Tag::output>(),
+                    ::aidl::android::media::audio::common::AudioOutputFlags::MMAP_NOIRQ));
 }
 
 // Some values are reserved for use by the system code only.
