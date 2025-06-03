@@ -51,6 +51,7 @@ using aidl::android::media::audio::common::MicrophoneInfo;
 
 using ::aidl::android::hardware::audio::core::IStreamCallback;
 using ::aidl::android::hardware::audio::core::IStreamCommon;
+using aidl::android::hardware::audio::core::MmapBufferDescriptor;
 using ::aidl::android::hardware::audio::core::StreamDescriptor;
 using ::aidl::android::hardware::audio::core::VendorParameter;
 
@@ -143,8 +144,8 @@ void StreamWorkerCommonLogic::populateReply(StreamDescriptor::Reply* reply,
     }
 
     static const StreamDescriptor::Position kUnknownPosition = {
-      .frames = StreamDescriptor::Position::UNKNOWN,
-      .timeNs = StreamDescriptor::Position::UNKNOWN};
+            .frames = StreamDescriptor::Position::UNKNOWN,
+            .timeNs = StreamDescriptor::Position::UNKNOWN};
 
     reply->latencyMs = mContext->getNominalLatencyMs();
 
@@ -152,13 +153,12 @@ void StreamWorkerCommonLogic::populateReply(StreamDescriptor::Reply* reply,
     reply->observable.timeNs = ::android::uptimeNanos();
     if (auto status = mDriver->refinePosition(reply); status == ::android::OK) {
         return;
-    }
-    else {
-       if (hasMMapFlagsEnabled(mContext->getFlags())) {
-           // if mmap position fails,return error to framework
-           // for any error other than.. not enough data, AAudio will stop
-           reply->status = STATUS_INVALID_OPERATION;
-       }
+    } else {
+        if (hasMMapFlagsEnabled(mContext->getFlags())) {
+            // if mmap position fails,return error to framework
+            // for any error other than.. not enough data, AAudio will stop
+            reply->status = STATUS_INVALID_OPERATION;
+        }
     }
 
     reply->observable = reply->hardware = kUnknownPosition;
@@ -195,11 +195,11 @@ StreamInWorkerLogic::Status StreamInWorkerLogic::cycle() {
 
 #ifdef VERY_VERBOSE_LOGGING
     LOG(severity) << __func__ << ": received command " << command.toString() << " in "
-                  << kThreadName;
+                  << kThreadName << " in state " << toString(mState);
 #else
     if (command.getTag() != Tag::burst && command.getTag() != Tag::getStatus)
         LOG(DEBUG) << __func__ << ": received command " << command.toString() << " in "
-                   << kThreadName;
+                   << kThreadName << " in state " << toString(mState);
 #endif
 
     StreamDescriptor::Reply reply{};
@@ -246,9 +246,11 @@ StreamInWorkerLogic::Status StreamInWorkerLogic::cycle() {
                     mState == StreamDescriptor::State::ACTIVE ||
                     mState == StreamDescriptor::State::PAUSED ||
                     mState == StreamDescriptor::State::DRAINING) {
-                    if (!read(fmqByteCount, &reply)) {
-                        // uncomment below, to treat the failure as HARD error, stream not recoverable
-                        // mState = StreamDescriptor::State::ERROR;
+                    if (mContext->isMmap()) {
+                        readMmap(&reply);
+                    } else if (!read(fmqByteCount, &reply)) {
+                        // uncomment below, to treat the failure as HARD error, stream not
+                        // recoverable mState = StreamDescriptor::State::ERROR;
                     }
                     if (mState == StreamDescriptor::State::IDLE ||
                         mState == StreamDescriptor::State::PAUSED) {
@@ -278,8 +280,8 @@ StreamInWorkerLogic::Status StreamInWorkerLogic::cycle() {
                         mState = StreamDescriptor::State::DRAINING;
                     } else {
                         LOG(ERROR) << __func__ << ": drain failed: " << status;
-                        // uncomment below, to treat the failure as HARD error, stream not recoverable
-                        // mState = StreamDescriptor::State::ERROR;
+                        // uncomment below, to treat the failure as HARD error, stream not
+                        // recoverable mState = StreamDescriptor::State::ERROR;
                     }
                 } else {
                     populateReplyWrongState(&reply, command);
@@ -320,6 +322,7 @@ StreamInWorkerLogic::Status StreamInWorkerLogic::cycle() {
             if (mState == StreamDescriptor::State::PAUSED) {
                 if (::android::status_t status = mDriver->flush(); status == ::android::OK) {
                     populateReply(&reply, mIsConnected);
+                    mDriver->standby(); // move to standby
                     mState = StreamDescriptor::State::STANDBY;
                 } else {
                     LOG(ERROR) << __func__ << ": flush failed: " << status;
@@ -383,6 +386,24 @@ bool StreamInWorkerLogic::read(size_t clientSize, StreamDescriptor::Reply* reply
 }
 
 const std::string StreamOutWorkerLogic::kThreadName = "writer";
+
+bool StreamInWorkerLogic::readMmap(StreamDescriptor::Reply* reply) {
+    void* buffer = nullptr;
+    size_t frameCount = 0;
+    size_t actualFrameCount = 0;
+    int32_t latency = mContext->getNominalLatencyMs();
+    // use default-initialized parameter values for mmap stream.
+    if (::android::status_t status =
+                mDriver->transfer(buffer, frameCount, &actualFrameCount, &latency);
+        status == ::android::OK) {
+        populateReply(reply, mIsConnected);
+        reply->latencyMs = latency;
+        return true;
+    } else {
+        LOG(ERROR) << __func__ << ": transfer failed: " << status;
+        return false;
+    }
+}
 
 void StreamOutWorkerLogic::publishTransferReady() {
     if (!mContext->getAsyncCallback()) {
@@ -454,7 +475,8 @@ StreamOutWorkerLogic::Status StreamOutWorkerLogic::cycle() {
     }
 
     LOG(VERBOSE) << __func__ << ": received command " << command.toString() << " in "
-                   << kThreadName;
+                 << kThreadName
+                 << " in state " << ::aidl::android::hardware::audio::core::toString(mState);
 
     StreamDescriptor::Reply reply{};
     reply.status = STATUS_BAD_VALUE;
@@ -525,7 +547,13 @@ StreamOutWorkerLogic::Status StreamOutWorkerLogic::cycle() {
                 if (mState != StreamDescriptor::State::ERROR &&
                     mState != StreamDescriptor::State::TRANSFERRING &&
                     mState != StreamDescriptor::State::TRANSFER_PAUSED) {
-                    if (!write(fmqByteCount, &reply)) {
+                    bool isMmap = mContext->isMmap();
+                    if (isMmap) {
+                        if (!writeMmap(&reply)) {
+                            LOG(ERROR) << __func__ << ": mmap write failed";
+                            break;
+                        }
+                    } else if (!write(fmqByteCount, &reply)) {
                         LOG(ERROR) << __func__ << ": write failed, but dont put in error state ";
                     }
                     std::shared_ptr<IStreamCallback> asyncCallback = mContext->getAsyncCallback();
@@ -751,6 +779,25 @@ bool StreamOutWorkerLogic::write(size_t clientSize, StreamDescriptor::Reply* rep
     return !fatal;
 }
 
+bool StreamOutWorkerLogic::writeMmap(StreamDescriptor::Reply* reply) {
+    void* buffer = nullptr;
+    size_t frameCount = 0;
+    size_t actualFrameCount = 0;
+    int32_t latency = mContext->getNominalLatencyMs();
+
+    //  use default-initialized parameter values for mmap stream.
+    if (::android::status_t status =
+                mDriver->transfer(buffer, frameCount, &actualFrameCount, &latency);
+        status == ::android::OK) {
+        populateReply(reply, mIsConnected);
+        reply->latencyMs = latency;
+        return true;
+    } else {
+        LOG(ERROR) << __func__ << ": transfer failed: " << status;
+        return false;
+    }
+}
+
 StreamCommonImpl::~StreamCommonImpl() {
     // It is responsibility of the class that implements 'DriverInterface' to call 'cleanupWorker'
     // in the destructor. Note that 'cleanupWorker' can not be properly called from this destructor
@@ -919,9 +966,12 @@ void StreamCommonImpl::setStreamMicMute(const bool muted) {
     return;
 }
 
-ndk::ScopedAStatus StreamCommonImpl::configureMMapStream(int32_t* fd, int64_t* burstSizeFrames,
-                                                         int32_t* flags,
+ndk::ScopedAStatus StreamCommonImpl::configureMMapStream(MmapBufferDescriptor* desc,
                                                          int32_t* bufferSizeFrames) {
+    return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
+}
+
+ndk::ScopedAStatus StreamCommonImpl::createMmapBuffer(MmapBufferDescriptor* desc) {
     return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -12,13 +12,14 @@
 #include <hardware/audio.h>
 #include <qti-audio-core/Module.h>
 #include <qti-audio-core/ModulePrimary.h>
+#include <qti-audio-core/Parameters.h>
 #include <qti-audio-core/StreamOutPrimary.h>
 #include <qti-audio/PlatformConverter.h>
-#include <qti-audio-core/Parameters.h>
 
 using aidl::android::hardware::audio::common::AudioOffloadMetadata;
 using aidl::android::hardware::audio::common::SinkMetadata;
 using aidl::android::hardware::audio::common::SourceMetadata;
+using aidl::android::media::audio::common::AudioChannelLayout;
 using aidl::android::media::audio::common::AudioDevice;
 using aidl::android::media::audio::common::AudioDualMonoMode;
 using aidl::android::media::audio::common::AudioLatencyMode;
@@ -26,11 +27,10 @@ using aidl::android::media::audio::common::AudioOffloadInfo;
 using aidl::android::media::audio::common::AudioPlaybackRate;
 using aidl::android::media::audio::common::MicrophoneDynamicInfo;
 using aidl::android::media::audio::common::MicrophoneInfo;
-using aidl::android::media::audio::common::AudioLatencyMode;
-using aidl::android::media::audio::common::AudioChannelLayout;
 
 using ::aidl::android::hardware::audio::core::IStreamCallback;
 using ::aidl::android::hardware::audio::core::IStreamCommon;
+using ::aidl::android::hardware::audio::core::MmapBufferDescriptor;
 using ::aidl::android::hardware::audio::core::StreamDescriptor;
 using ::aidl::android::hardware::audio::core::VendorParameter;
 
@@ -68,7 +68,7 @@ StreamOutPrimary::StreamOutPrimary(StreamContext&& context, const SourceMetadata
     } else if (mTag == Usecase::SPATIAL_PLAYBACK) {
         mExt.emplace<SpatialPlayback>();
     } else if (mTag == Usecase::MMAP_PLAYBACK) {
-        mExt.emplace<MMapPlayback>();
+        mExt.emplace<MMapPlayback>(this, mMixPortConfig);
     } else if (mTag == Usecase::ULL_PLAYBACK) {
         mExt.emplace<UllPlayback>();
     } else if (mTag == Usecase::IN_CALL_MUSIC) {
@@ -181,8 +181,14 @@ ndk::ScopedAStatus StreamOutPrimary::configureConnectedDevices_I() {
     return ndk::ScopedAStatus::ok();
 }
 
-ndk::ScopedAStatus StreamOutPrimary::configureMMapStream(int32_t* fd, int64_t* burstSizeFrames,
-                                                         int32_t* flags,
+ndk::ScopedAStatus StreamOutPrimary::createMmapBuffer(MmapBufferDescriptor* desc) {
+    if (mTag == Usecase::MMAP_PLAYBACK) {
+        return std::get<MMapPlayback>(mExt).createOrGetMmapBuffer(desc);
+    }
+    return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
+}
+
+ndk::ScopedAStatus StreamOutPrimary::configureMMapStream(MmapBufferDescriptor* desc,
                                                          int32_t* bufferSizeFrames) {
     if (mTag != Usecase::MMAP_PLAYBACK) {
         LOG(ERROR) << __func__ << mLogPrefix << " cannot call on non-MMAP stream types";
@@ -254,13 +260,13 @@ ndk::ScopedAStatus StreamOutPrimary::configureMMapStream(int32_t* fd, int64_t* b
 
     const auto frameSize = getFrameSizeInBytes(
             mMixPortConfig.format.value(), mMixPortConfig.channelMask.value());
-    int32_t ret = std::get<MMapPlayback>(mExt).createMMapBuffer(frameSize, fd, burstSizeFrames,
-                                                                flags, bufferSizeFrames);
-    if (ret != 0) {
-        LOG(ERROR) << __func__ << mLogPrefix << " create MMap buffer failed!";
+    auto ret = std::get<MMapPlayback>(mExt).createMMapBuffer(frameSize, desc, bufferSizeFrames);
+
+    if (!ret.isOk()) {
+        LOG(ERROR) << __func__ << mLogPrefix << " createMMapBuffer failed!";
         ::pal_stream_close(mPalHandle);
         mPalHandle = nullptr;
-        return ndk::ScopedAStatus::fromExceptionCode(EX_ILLEGAL_STATE);
+        return ret;
     }
 
     LOG(INFO) << __func__ << mLogPrefix << ": stream is configured";
@@ -395,10 +401,6 @@ void StreamOutPrimary::resume() {
     // hardware is expected to up on start
     // but we are doing on first write
     LOG(DEBUG) << __func__ << mLogPrefix;
-
-    if (mTag == Usecase::MMAP_PLAYBACK) {
-        return startMMAP();
-    }
 
     if (mPalHandle && mIsPaused) {
         resume();
@@ -569,24 +571,7 @@ void StreamOutPrimary::resume() {
                 std::get<PcmOffloadPlayback>(mExt).getPositionInFrames(mPalHandle);
         cachedFrames = std::get<PcmOffloadPlayback>(mExt).getCachedFrames();
     } else if (mTag == Usecase::MMAP_PLAYBACK) {
-        int32_t ret = std::get<MMapPlayback>(mExt).getMMapPosition(&(reply->hardware.frames),
-                                                                       &(reply->hardware.timeNs));
-        if (ret != 0) {
-            LOG(ERROR) << __func__ << mLogPrefix << ": mmap position failed";
-            return android::INVALID_OPERATION;
-        }
-
-        int64_t totalDelayFrames = 0;
-        totalDelayFrames =
-                mContext.getNominalLatencyMs() * mMixPortConfig.sampleRate.value().value / 1000;
-        reply->observable.frames = (reply->hardware.frames > totalDelayFrames)
-                                           ? (reply->hardware.frames - totalDelayFrames)
-                                           : 0;
-        reply->observable.timeNs = reply->hardware.timeNs;
-        LOG(VERBOSE) << __func__ << mLogPrefix << ": hw frames " << reply->hardware.frames
-                     << " observable frames " << reply->observable.frames
-                     << " time : " << reply->observable.timeNs;
-        return ::android::OK;
+        return std::get<MMapPlayback>(mExt).getMMapPosition(reply);
     } else {
         int64_t totalDelayFrames = 0;
         totalDelayFrames = mContext.getNominalLatencyMs() *
@@ -880,6 +865,10 @@ ndk::ScopedAStatus StreamOutPrimary::getVendorParameters(
         return compressPlayback.getVendorParameters(in_ids, _aidl_return);
     }
 
+    if (mTag == Usecase::MMAP_PLAYBACK) {
+        auto& mmapPlayback = std::get<MMapPlayback>(mExt);
+        return mmapPlayback.getVendorParameters(in_ids, _aidl_return);
+    }
     for (const auto& id : in_ids) {
         if (id == Parameters::kSupportsHwSuspend) {
             if (mTag == Usecase::LOW_LATENCY_PLAYBACK) {
@@ -900,8 +889,11 @@ ndk::ScopedAStatus StreamOutPrimary::getVendorParameters(
 ndk::ScopedAStatus StreamOutPrimary::setVendorParameters(
         const std::vector<VendorParameter>& in_parameters, bool in_async) {
     if (mTag == Usecase::COMPRESS_OFFLOAD_PLAYBACK) {
-        auto& compressPlayback = std::get<CompressPlayback>(mExt);
-        return compressPlayback.setVendorParameters(in_parameters, in_async);
+        auto& usecase = std::get<CompressPlayback>(mExt);
+        return usecase.setVendorParameters(in_parameters, in_async);
+    } else if (mTag == Usecase::MMAP_PLAYBACK) {
+        auto& usecase = std::get<MMapPlayback>(mExt);
+        return usecase.setVendorParameters(in_parameters, in_async);
     }
     return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
 }
@@ -953,8 +945,7 @@ size_t StreamOutPrimary::getPlatformDelay() const noexcept {
 }
 
 void StreamOutPrimary::configure() {
-
-    if(hasOutputMMapFlag(mMixPortConfig.flags.value())){
+    if (hasOutputMMapFlag(mMixPortConfig.flags.value())) {
         // this API doesn't handle for MMAP
         return;
     }
@@ -1268,7 +1259,6 @@ ndk::ScopedAStatus StreamOutPrimary::setLatencyMode(
 }
 
 void StreamOutPrimary::shutdown_I() {
-
     if (mTag == Usecase::COMPRESS_OFFLOAD_PLAYBACK) {
         std::get<CompressPlayback>(mExt).setAndConfigureCodecInfo(nullptr);
     } else if (mTag == Usecase::MMAP_PLAYBACK) {
