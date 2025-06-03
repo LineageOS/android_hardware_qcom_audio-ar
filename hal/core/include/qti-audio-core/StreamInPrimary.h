@@ -1,16 +1,18 @@
 /*
- * Copyright (c) 2023-2025 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
 #pragma once
 
+#include <aidl/android/hardware/audio/core/MmapBufferDescriptor.h>
 #include <qti-audio-core/AudioUsecase.h>
+#include <qti-audio-core/MmapBufferImpl.h>
 #include <qti-audio-core/Stream.h>
 #include <system/audio_effects/effect_uuid.h>
 namespace qti::audio::core {
 
-class StreamInPrimary : public StreamIn, public StreamCommonImpl {
+class StreamInPrimary : public StreamIn, public StreamCommonImpl, public MmapBufferImpl {
   public:
     friend class ndk::SharedRefBase;
     StreamInPrimary(
@@ -65,8 +67,13 @@ class StreamInPrimary : public StreamIn, public StreamCommonImpl {
             override;
     ndk::ScopedAStatus reconfigureConnectedDevices() override;
     void setStreamMicMute(const bool muted) override;
-    ndk::ScopedAStatus configureMMapStream(int32_t* fd, int64_t* burstSizeFrames, int32_t* flags,
-                                           int32_t* bufferSizeFrames) override;
+
+    ndk::ScopedAStatus configureMMapStream(
+            ::aidl::android::hardware::audio::core::MmapBufferDescriptor* desc,
+            int32_t* bufferSizeFrames) override;
+
+    ndk::ScopedAStatus createMmapBuffer(
+            ::aidl::android::hardware::audio::core::MmapBufferDescriptor* desc) override;
 
     void onClose() override { defaultOnClose(); }
     static std::mutex sinkMetadata_mutex_;

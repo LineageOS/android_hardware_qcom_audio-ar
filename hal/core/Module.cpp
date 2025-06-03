@@ -31,7 +31,6 @@
 #include <android-base/properties.h>
 #include <android/binder_ibinder_platform.h>
 #include <error/expected_utils.h>
-
 #include <qti-audio-core/Module.h>
 #include <qti-audio-core/SoundDose.h>
 #include <qti-audio-core/Utils.h>
@@ -63,13 +62,14 @@ using aidl::android::media::audio::common::PcmType;
 using ::aidl::android::hardware::audio::common::SinkMetadata;
 using ::aidl::android::hardware::audio::common::SourceMetadata;
 
-using ::aidl::android::hardware::audio::core::IStreamOut;
-using ::aidl::android::hardware::audio::core::IStreamIn;
 using ::aidl::android::hardware::audio::core::AudioPatch;
 using ::aidl::android::hardware::audio::core::AudioRoute;
 using ::aidl::android::hardware::audio::core::IBluetooth;
-using ::aidl::android::hardware::audio::core::VendorParameter;
+using ::aidl::android::hardware::audio::core::IStreamIn;
+using ::aidl::android::hardware::audio::core::IStreamOut;
+using aidl::android::hardware::audio::core::MmapBufferDescriptor;
 using ::aidl::android::hardware::audio::core::StreamDescriptor;
+using ::aidl::android::hardware::audio::core::VendorParameter;
 using ::aidl::android::hardware::audio::core::sounddose::ISoundDose;
 
 namespace qti::audio::core {
@@ -854,16 +854,10 @@ ndk::ScopedAStatus Module::openInputStream(const OpenInputStreamArguments& in_ar
     }
 
     if (hasInputMMapFlag(port->flags)) {
-        int32_t fd, mmapFlags, bufferSizeFrames;
-        int64_t burstSizeFrames;
-        RETURN_STATUS_IF_ERROR(streamWrapper.configureMMapStream(&fd, &burstSizeFrames, &mmapFlags,
-                                                                 &bufferSizeFrames));
-        _aidl_return->desc.audio.set<StreamDescriptor::AudioBuffer::Tag::mmap>();
-        auto& mmapRef = _aidl_return->desc.audio
-                            .get<StreamDescriptor::AudioBuffer::Tag::mmap>();
-        mmapRef.sharedMemory.fd = ndk::ScopedFileDescriptor{fd};
-        mmapRef.burstSizeFrames = burstSizeFrames;
-        mmapRef.flags = mmapFlags;
+        int32_t bufferSizeFrames;
+        MmapBufferDescriptor mmapDesc;
+        RETURN_STATUS_IF_ERROR(streamWrapper.configureMMapStream(&mmapDesc, &bufferSizeFrames));
+        _aidl_return->desc.audio.set<StreamDescriptor::AudioBuffer::Tag::mmap>(std::move(mmapDesc));
         _aidl_return->desc.bufferSizeFrames = bufferSizeFrames;
     }
 
@@ -916,16 +910,10 @@ ndk::ScopedAStatus Module::openOutputStream(const OpenOutputStreamArguments& in_
     }
 
     if (hasOutputMMapFlag(port->flags)) {
-        int32_t fd, mmapFlags, bufferSizeFrames;
-        int64_t burstSizeFrames;
-        RETURN_STATUS_IF_ERROR(streamWrapper.configureMMapStream(&fd, &burstSizeFrames, &mmapFlags,
-                                                                 &bufferSizeFrames));
-        _aidl_return->desc.audio.set<StreamDescriptor::AudioBuffer::Tag::mmap>();
-        auto& mmapRef = _aidl_return->desc.audio
-                                .get<StreamDescriptor::AudioBuffer::Tag::mmap>();
-        mmapRef.sharedMemory.fd = ndk::ScopedFileDescriptor{fd};
-        mmapRef.burstSizeFrames = burstSizeFrames;
-        mmapRef.flags = mmapFlags;
+        int32_t bufferSizeFrames;
+        MmapBufferDescriptor mmapDesc;
+        RETURN_STATUS_IF_ERROR(streamWrapper.configureMMapStream(&mmapDesc, &bufferSizeFrames));
+        _aidl_return->desc.audio.set<StreamDescriptor::AudioBuffer::Tag::mmap>(std::move(mmapDesc));
         _aidl_return->desc.bufferSizeFrames = bufferSizeFrames;
     } else if (mTelephony && hasOutputVoipRxFlag(port->flags)) {
         // TODO remove this way of handling streams for telephony

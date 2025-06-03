@@ -1,18 +1,23 @@
 /*
- * Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
 #pragma once
 
+#include <aidl/android/hardware/audio/core/MmapBufferDescriptor.h>
 #include <qti-audio-core/AudioUsecase.h>
 #include <qti-audio-core/HalOffloadEffects.h>
-#include <qti-audio-core/Stream.h>
+#include <qti-audio-core/MmapBufferImpl.h>
 #include <qti-audio-core/PlatformStreamCallback.h>
+#include <qti-audio-core/Stream.h>
 
 namespace qti::audio::core {
 
-class StreamOutPrimary : public StreamOut, public StreamCommonImpl, public PlatformStreamCallback {
+class StreamOutPrimary : public StreamOut,
+                         public StreamCommonImpl,
+                         public PlatformStreamCallback,
+                         public MmapBufferImpl {
   public:
     friend class ndk::SharedRefBase;
     StreamOutPrimary(StreamContext&& context,
@@ -75,8 +80,13 @@ class StreamOutPrimary : public StreamOut, public StreamCommonImpl, public Platf
             const std::vector<::aidl::android::media::audio::common::AudioDevice>& devices)
             override;
     ndk::ScopedAStatus reconfigureConnectedDevices() override;
-    ndk::ScopedAStatus configureMMapStream(int32_t* fd, int64_t* burstSizeFrames, int32_t* flags,
-                                           int32_t* bufferSizeFrames) override;
+
+    ndk::ScopedAStatus configureMMapStream(
+            ::aidl::android::hardware::audio::core::MmapBufferDescriptor* desc,
+            int32_t* bufferSizeFrames) override;
+
+    ndk::ScopedAStatus createMmapBuffer(
+            ::aidl::android::hardware::audio::core::MmapBufferDescriptor* desc) override;
 
     void onClose() override { defaultOnClose(); }
 
