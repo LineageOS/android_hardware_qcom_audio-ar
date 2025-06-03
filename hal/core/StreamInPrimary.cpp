@@ -1,21 +1,21 @@
 /*
- * Copyright (c) 2023-2025 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
 #define LOG_TAG "AHAL_StreamIn_QTI"
 
-#include <cmath>
-
 #include <aidl/android/hardware/audio/effect/IEffect.h>
-
 #include <android-base/logging.h>
 #include <audio_utils/clock.h>
 #include <hardware/audio.h>
 #include <qti-audio-core/Module.h>
 #include <qti-audio-core/ModulePrimary.h>
+#include <qti-audio-core/Parameters.h>
 #include <qti-audio-core/StreamInPrimary.h>
 #include <system/audio.h>
+
+#include <cmath>
 
 using aidl::android::hardware::audio::common::AudioOffloadMetadata;
 using aidl::android::hardware::audio::common::SinkMetadata;
@@ -31,12 +31,13 @@ using aidl::android::media::audio::common::MicrophoneInfo;
 
 using ::aidl::android::hardware::audio::core::IStreamCallback;
 using ::aidl::android::hardware::audio::core::IStreamCommon;
+using aidl::android::hardware::audio::core::MmapBufferDescriptor;
 using ::aidl::android::hardware::audio::core::StreamDescriptor;
 using ::aidl::android::hardware::audio::core::VendorParameter;
 using ::aidl::android::hardware::audio::effect::getEffectTypeUuidAcousticEchoCanceler;
 using ::aidl::android::hardware::audio::effect::getEffectTypeUuidNoiseSuppression;
-using ::aidl::android::media::audio::common::AudioDeviceType;
 using ::aidl::android::media::audio::common::AudioDeviceDescription;
+using ::aidl::android::media::audio::common::AudioDeviceType;
 
 // uncomment this to enable logging of very verbose logs like burst commands.
 // #define VERY_VERBOSE_LOGGING 1
@@ -64,7 +65,7 @@ StreamInPrimary::StreamInPrimary(StreamContext&& context, const SinkMetadata& si
     } else if (mTag == Usecase::VOIP_RECORD) {
         mExt.emplace<VoipRecord>();
     } else if (mTag == Usecase::MMAP_RECORD) {
-        mExt.emplace<MMapRecord>();
+        mExt.emplace<MMapRecord>(this, mMixPortConfig);
     } else if (mTag == Usecase::VOICE_CALL_RECORD) {
         mExt.emplace<VoiceCallRecord>();
     } else if (mTag == Usecase::FAST_RECORD) {
@@ -186,8 +187,15 @@ struct BufferConfig StreamInPrimary::getBufferConfig() {
     return mPlatform.getBufferConfig(mMixPortConfig, mTag);
 }
 
-ndk::ScopedAStatus StreamInPrimary::configureMMapStream(int32_t* fd, int64_t* burstSizeFrames,
-                                                        int32_t* flags, int32_t* bufferSizeFrames) {
+ndk::ScopedAStatus StreamInPrimary::createMmapBuffer(MmapBufferDescriptor* desc) {
+    if (mTag == Usecase::MMAP_RECORD) {
+        return std::get<MMapRecord>(mExt).createOrGetMmapBuffer(desc);
+    }
+    return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
+}
+
+ndk::ScopedAStatus StreamInPrimary::configureMMapStream(MmapBufferDescriptor* desc,
+                                                        int32_t* bufferSizeFrames) {
     if (mTag != Usecase::MMAP_RECORD) {
         LOG(ERROR) << __func__ << mLogPrefix << " cannot call on non-MMAP stream types";
         return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
@@ -221,8 +229,8 @@ ndk::ScopedAStatus StreamInPrimary::configureMMapStream(int32_t* fd, int64_t* bu
 
     auto palBufferConfig = mPlatform.getPalBufferConfig(ringBufSizeInBytes, ringBufCount);
     LOG(DEBUG) << __func__ << mLogPrefix << " set pal_stream_set_buffer_size to "
-                 << std::to_string(ringBufSizeInBytes) << " with count "
-                 << std::to_string(ringBufCount);
+               << std::to_string(ringBufSizeInBytes) << " with count "
+               << std::to_string(ringBufCount);
     if (int32_t ret =
                 ::pal_stream_set_buffer_size(this->mPalHandle, palBufferConfig.get(), nullptr);
         ret) {
@@ -237,15 +245,13 @@ ndk::ScopedAStatus StreamInPrimary::configureMMapStream(int32_t* fd, int64_t* bu
 
     const auto frameSize = getFrameSizeInBytes(mMixPortConfig.format.value(),
                                 mMixPortConfig.channelMask.value());
-    int32_t ret = std::get<MMapRecord>(mExt).createMMapBuffer(frameSize, fd, burstSizeFrames, flags,
-                                                              bufferSizeFrames);
-    if (ret != 0) {
+    auto ret = std::get<MMapRecord>(mExt).createMMapBuffer(frameSize, desc, bufferSizeFrames);
+    if (!ret.isOk()) {
         LOG(ERROR) << __func__ << mLogPrefix << " createMMapBuffer failed";
         ::pal_stream_close(mPalHandle);
         mPalHandle = nullptr;
-        return ndk::ScopedAStatus::fromExceptionCode(EX_ILLEGAL_STATE);
+        return ret;
     }
-
 
     if (mPlatform.getMicMuteStatus()) {
         setStreamMicMute(true);
@@ -293,7 +299,6 @@ ndk::ScopedAStatus StreamInPrimary::configureMMapStream(int32_t* fd, int64_t* bu
 }
 
 ::android::status_t StreamInPrimary::pause() {
-
     if (mTag == Usecase::MMAP_RECORD) {
         // pause in MMAP is stop
         return stopMMAP();
@@ -320,11 +325,6 @@ void StreamInPrimary::resume() {
 
 ::android::status_t StreamInPrimary::start() {
     LOG(DEBUG) << __func__ << mLogPrefix;
-
-    if (mTag == Usecase::MMAP_RECORD) {
-        return startMMAP();
-    }
-
     return ::android::OK;
 }
 
@@ -423,11 +423,7 @@ void StreamInPrimary::resume() {
         auto& compressCapture = std::get<CompressCapture>(mExt);
         reply->observable.frames = compressCapture.getPositionInFrames();
     } else if (mTag == Usecase::MMAP_RECORD) {
-        if (int32_t ret = std::get<MMapRecord>(mExt).getMMapPosition(&(reply->hardware.frames),
-                                                                     &(reply->hardware.timeNs));
-            ret != 0) {
-            return android::INVALID_OPERATION;
-        }
+        return std::get<MMapRecord>(mExt).getMMapPosition(reply);
     }
     /* Adjustment accounts for A2dp decoder latency
      * Note: Decoder latency is returned in ms, while platform_source_latency in us.
@@ -585,6 +581,10 @@ ndk::ScopedAStatus StreamInPrimary::getVendorParameters(
         auto& compressCapture = std::get<CompressCapture>(mExt);
         return compressCapture.getVendorParameters(in_ids, _aidl_return);
     }
+    if (mTag == Usecase::MMAP_RECORD) {
+        auto& mmapRecord = std::get<MMapRecord>(mExt);
+        return mmapRecord.getVendorParameters(in_ids, _aidl_return);
+    }
     return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
 }
 
@@ -593,6 +593,9 @@ ndk::ScopedAStatus StreamInPrimary::setVendorParameters(
     if (mTag == Usecase::COMPRESS_CAPTURE) {
         auto& compressCapture = std::get<CompressCapture>(mExt);
         return compressCapture.setVendorParameters(in_parameters, in_async);
+    } else if (mTag == Usecase::MMAP_RECORD) {
+        auto& usecase = std::get<MMapRecord>(mExt);
+        return usecase.setVendorParameters(in_parameters, in_async);
     }
     return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
 }
@@ -673,8 +676,7 @@ size_t StreamInPrimary::getPlatformDelay() const noexcept {
 }
 
 void StreamInPrimary::configure() {
-
-    if(hasInputMMapFlag(mMixPortConfig.flags.value())){
+    if (hasInputMMapFlag(mMixPortConfig.flags.value())) {
         // this API doesn't handle for MMAP
         return;
     }
