@@ -16,6 +16,23 @@
       "message": "Is this good to merge?",
       "revId": "659f51de3fb7e4c534d9a4ac150248f5f0dd5a6e",
       "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "040ca40e_26e0c3c8",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 9
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 30416
+      },
+      "writtenOn": "2025-06-09T14:14:16Z",
+      "side": 1,
+      "message": "Yes, I am on the latest patch and its good to merge.",
+      "revId": "659f51de3fb7e4c534d9a4ac150248f5f0dd5a6e",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
     }
   ]
 }
