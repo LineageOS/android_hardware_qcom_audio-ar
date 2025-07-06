@@ -1,0 +1,148 @@
+cc_library_headers {
+
+    name: "libaudio_extn_headers",
+    export_include_dirs: ["inc"],
+
+    vendor: true,
+
+}
+
+cc_library_shared {
+    name: "libhfp_pal",
+
+    defaults: [
+        "android_hardware_audio_config_defaults",
+    ],
+
+    vendor: true,
+
+    cflags: select(soong_config_variable("ANDROID", "target_board_auto,"), {
+        "true": [
+            "-DPLATFORM_AUTO",
+        ],
+        default: [],
+    }) + [
+        "-Wall",
+        "-Werror",
+        "-Wno-unused-function",
+        "-Wno-unused-variable",
+
+    ],
+
+    srcs: ["Hfp.cpp"],
+
+    shared_libs: [
+        "libar-pal",
+        "libaudioroute",
+        "libaudioutils",
+        "libcutils",
+        "libdl",
+        "libexpat",
+        "liblog",
+    ],
+
+    include_dirs: [
+        "external/expat/lib",
+        "system/media/audio_utils/include",
+    ],
+
+    local_include_dirs: ["inc"],
+
+    header_libs: [
+        "libaudio_hal_headers",
+        "libhardware_headers",
+        "libsystem_headers",
+    ],
+}
+
+cc_library_shared {
+    name: "libfmpal",
+
+    defaults: [
+        "android_hardware_audio_config_defaults",
+    ],
+
+    vendor: true,
+
+    srcs: ["FM.cpp"],
+
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-Wno-unused-function",
+        "-Wno-unused-variable",
+    ],
+
+    shared_libs: [
+        "libar-pal",
+        "libaudioroute",
+        "libaudioutils",
+        "libcutils",
+        "libdl",
+        "libexpat",
+        "liblog",
+    ],
+
+    include_dirs: [
+        "external/expat/lib",
+        "system/media/audio_utils/include",
+    ],
+    local_include_dirs: ["inc"],
+
+    header_libs: [
+        "libarpal_headers",
+        "libaudio_hal_headers",
+        "libhardware_headers",
+        "libsystem_headers",
+    ],
+}
+
+cc_library_shared {
+    name: "libbatterylistener",
+    vendor: true,
+
+    srcs: ["battery_listener.cpp"],
+
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-Wno-unused-function",
+        "-Wno-unused-variable",
+    ] + select(soong_config_variable("ANDROID", "target_board_platform"), {
+        "bengal": [
+            "-DQTI_HEALTH",
+        ],
+        "blair": [
+            "-DQTI_HEALTH",
+        ],
+        default: [],
+    }),
+
+    local_include_dirs: ["inc"],
+
+    shared_libs: [
+        "android.hardware.health@1.0",
+        "android.hardware.health@2.0",
+        "android.hardware.health@2.1",
+        "android.hardware.power@1.2",
+        "libaudioutils",
+        "libbase",
+        "libcutils",
+        "libdl",
+        "libhidlbase",
+        "liblog",
+        "libutils",
+    ] + select(soong_config_variable("ANDROID", "target_board_platform"), {
+        "bengal": [
+            "android.hardware.health-V1-ndk",
+            "libbinder_ndk",
+        ],
+        "blair": [
+            "android.hardware.health-V1-ndk",
+            "libbinder_ndk",
+        ],
+        default: [],
+    }),
+
+    static_libs: ["libhealthhalutils"],
+}

@@ -4,8 +4,8 @@ cc_binary {
     srcs: ["adsprpcd.c"],
 
     shared_libs: [
-        "liblog",
         "libdl",
+        "liblog",
     ],
 
     init_rc: ["vendor.qti.audio-adsprpc-service.rc"],

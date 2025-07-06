@@ -1,0 +1,185 @@
+cc_library_headers {
+    name: "libaudio_hal_headers",
+    export_include_dirs: ["inc"],
+
+    vendor: true,
+}
+
+soong_config_module_type {
+    name: "target_board_platform_cc_library_shared",
+    module_type: "cc_library_shared",
+    config_namespace: "ANDROID",
+    value_variables: ["target_board_platform"],
+    properties: [
+        "name",
+    ],
+}
+
+target_board_platform_cc_library_shared {
+    soong_config_variables: {
+        target_board_platform: {
+            name: "audio.primary.%s",
+            conditions_default: {
+                name: "audio.primary.qcom",
+            },
+        },
+    },
+
+    relative_install_path: "hw",
+
+    defaults: [
+        "android_hardware_audio_config_defaults",
+    ],
+
+    owner: "qti",
+    vendor: true,
+    arch: {
+        arm: {
+            instruction_set: "arm",
+        },
+    },
+
+    vintf_fragments: ["configs/common/manifest_non_qmaa.xml"] +
+        select(soong_config_variable("qtiaudio", "feature_lsm_hidl"), {
+            "true": [
+                "configs/common/manifest_non_qmaa_extn.xml",
+            ],
+            default: [],
+        }),
+
+    cflags: [
+        "-D_GNU_SOURCE",
+        "-Wall",
+        "-Werror",
+        "-Wno-format",
+        "-Wno-gnu-designator",
+        "-Wno-macro-redefined",
+        "-Wno-shorten-64-to-32",
+        "-Wno-sign-compare",
+        "-Wno-tautological-compare",
+        "-Wno-typedef-redefinition",
+        "-Wno-unused-function",
+        "-Wno-unused-label",
+        "-Wno-unused-local-typedef",
+        "-Wno-unused-parameter",
+        "-Wno-unused-variable",
+    ] +
+        select(soong_config_variable("qtiaudio", "feature_ec_ref_capture"), {
+            "true": [
+                "-DEC_REF_CAPTURE_ENABLED",
+            ],
+            default: [],
+        }) + select(soong_config_variable("qtiaudio", "feature_dynamic_sr"), {
+            "true": [
+                "-DDYNAMIC_SR_ENABLED",
+            ],
+            default: [],
+        }) + select(soong_config_variable("qtiaudio", "feature_true_stereo"), {
+            "true": [
+                "-DTRUE_STEREO_ENABLED",
+            ],
+            default: [],
+        }) + select(soong_config_variable("qtiaudio", "feature_pal_hidl"), {
+            "true": [
+                "-DPAL_HIDL_ENABLED",
+            ],
+            default: [],
+        }) + select(soong_config_variable("qtiaudio", "feature_agm_hidl"), {
+            "true": [
+                "-DAGM_HIDL_ENABLED",
+            ],
+            default: [],
+        }) + select(soong_config_variable("qtiaudio", "feature_gef_support"), {
+            "true": [
+                "-DAUDIO_GENERIC_EFFECT_FRAMEWORK_ENABLED",
+            ],
+            default: [],
+        }) + select(soong_config_variable("qtiaudio", "feature_instance_id"), {
+            "true": [
+                "-DINSTANCE_ID_ENABLED",
+            ],
+            default: [],
+        }) + select(soong_config_variable("qtiaudio", "ultrasound_proximity"), {
+            "true": [
+                "-DAUDIO_ULTRASOUND_PROXIMITY_ENABLED",
+            ],
+            default: [],
+        }) + select(soong_config_variable("ANDROID", "target_board_platform"), {
+            any @ board_platform: [
+                "-DSOUND_TRIGGER_PLATFORM_NAME=\" + board_platform + \"",
+            ],
+            default: [
+                "-DSOUND_TRIGGER_PLATFORM_NAME=\"qcom\"",
+            ],
+        }),
+
+    cppflags: ["-fexceptions"],
+
+    local_include_dirs: ["inc"],
+
+    include_dirs: [
+        "system/media/audio_effects/include",
+    ],
+
+    srcs: [
+        "AudioDevice.cpp",
+        "AudioStream.cpp",
+        "AudioVoice.cpp",
+        "Lvacfs.cpp",
+        "audio_extn/AudioExtn.cpp",
+        "audio_extn/Gain.cpp",
+        "audio_extn/Gef.cpp",
+        "audio_extn/soundtrigger.cpp",
+    ] + select(soong_config_variable("qtiaudio", "ultrasound_proximity"), {
+        "true": [
+            "audio_extn/UltrasoundProximity.cpp",
+        ],
+        default: [],
+    }),
+
+    header_libs: [
+        "libarpal_headers",
+        "libaudio_extn_headers",
+        "libaudio_system_headers",
+        "libhardware_headers",
+    ] + select(soong_config_variable("qtiaudio", "feature_agm_hidl"), {
+        "true": [
+            "libagm_headers",
+        ],
+        default: [],
+    }) + select(soong_config_variable("qtiaudio", "ultrasound_proximity"), {
+        "true": [
+            "libspf-headers",
+        ],
+        default: [],
+    }),
+
+    shared_libs: [
+        "android.hidl.allocator@1.0",
+        "android.hidl.memory@1.0",
+        "libar-pal",
+        "libaudioutils",
+        "libbase",
+        "libcutils",
+        "libdl",
+        "libexpat",
+        "libhidlbase",
+        "libhidlmemory",
+        "liblog",
+        "libprocessgroup",
+        "libutils",
+    ] + select(soong_config_variable("qtiaudio", "feature_pal_hidl"), {
+        "true": [
+            "vendor.qti.hardware.pal@1.0-impl",
+            "vendor.qti.hardware.pal@1.0",
+        ],
+        default: [],
+    }) + select(soong_config_variable("qtiaudio", "feature_agm_hidl"), {
+        "true": [
+            "vendor.qti.hardware.AGMIPC@1.0-impl",
+            "vendor.qti.hardware.AGMIPC@1.0",
+            "libagm",
+        ],
+        default: [],
+    }),
+}

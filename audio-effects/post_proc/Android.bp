@@ -1,0 +1,199 @@
+cc_library_shared {
+    name: "libqcompostprocbundle",
+
+    defaults: [
+        "android_hardware_audio_config_defaults",
+        "qtiaudio_gcov_defaults",
+    ],
+
+    cflags: [
+        "-O2",
+        "-Wall",
+        "-Werror",
+        "-Wno-format",
+        "-Wno-gnu-designator",
+        "-Wno-shorten-64-to-32",
+        "-Wno-sign-compare",
+        "-Wno-tautological-compare",
+        "-Wno-typedef-redefinition",
+        "-Wno-unused-function",
+        "-Wno-unused-label",
+        "-Wno-unused-local-typedef",
+        "-Wno-unused-parameter",
+        "-Wno-unused-value",
+        "-Wno-unused-variable",
+        "-fvisibility=hidden",
+    ] + select(soong_config_variable("qtiaudio", "feature_instance_id"), {
+        "true": [
+            "-DINSTANCE_ID_ENABLED",
+        ],
+        default: [],
+    }) + select(soong_config_variable("qtiaudio", "feature_disabled_dts_eagle"), {
+        "true": [],
+        default: [
+            "-DDTS_EAGLE",
+        ],
+    }),
+
+    srcs: [
+        "bass_boost.c",
+        "bundle.c",
+        "effect_api.c",
+        "effect_util.c",
+        "equalizer.c",
+        "reverb.c",
+        "virtualizer.c",
+    ],
+
+    include_dirs: [
+        "system/media/audio_effects/include",
+    ],
+
+    header_libs: [
+        "libarpal_headers",
+        "libaudio_extn_headers",
+        "libaudio_hal_headers",
+        "libhardware_headers",
+        "libsystem_headers",
+        "libutils_headers",
+        "qti_audio_kernel_uapi",
+    ] + select(soong_config_variable("qtiaudio", "feature_dlkm"), {
+        "true": ["audio_kernel_headers"],
+        default: [],
+    }),
+
+    shared_libs: [
+        "libar-pal",
+        "libcutils",
+        "libdl",
+        "liblog",
+    ],
+
+    relative_install_path: "soundfx",
+    vendor: true,
+    owner: "qti",
+}
+
+cc_library_static {
+    name: "libhwacceffectswrapper",
+
+    cflags: [
+        "-O2",
+        "-Wno-format",
+        "-Wno-gnu-designator",
+        "-Wno-shorten-64-to-32",
+        "-Wno-sign-compare",
+        "-Wno-tautological-compare",
+        "-Wno-typedef-redefinition",
+        "-Wno-unused-function",
+        "-Wno-unused-label",
+        "-Wno-unused-local-typedef",
+        "-Wno-unused-parameter",
+        "-Wno-unused-variable",
+        "-fvisibility=hidden",
+    ] +
+        select(soong_config_variable("qtiaudio", "feature_dts_eagle"), {
+            "true": ["-DHW_ACC_HPX"],
+            default: [
+            ],
+        }),
+
+    srcs: ["EffectsHwAcc.cpp"],
+
+    header_libs: [
+        "libarpal_headers",
+        "libhardware_headers",
+        "libsystem_headers",
+        "libutils_headers",
+    ],
+
+    shared_libs: [
+        "libeffects",
+        "liblog",
+    ],
+
+    vendor: true,
+}
+
+cc_library_shared {
+    name: "libvolumelistener",
+
+    defaults: [
+        "android_hardware_audio_config_defaults",
+    ],
+
+    cflags: [
+        "-O2",
+        "-Wall",
+        "-Werror",
+        "-Wno-format",
+        "-Wno-gnu-designator",
+        "-Wno-shorten-64-to-32",
+        "-Wno-sign-compare",
+        "-Wno-tautological-compare",
+        "-Wno-typedef-redefinition",
+        "-Wno-unused-function",
+        "-Wno-unused-label",
+        "-Wno-unused-local-typedef",
+        "-Wno-unused-parameter",
+        "-Wno-unused-variable",
+        "-fvisibility=hidden",
+    ],
+    srcs: ["volume_listener.c"],
+
+    header_libs: [
+        "libarpal_headers",
+        "libaudio_extn_headers",
+        "libaudio_hal_headers",
+        "libhardware_headers",
+        "libsystem_headers",
+        "libutils_headers",
+    ] + select(soong_config_variable("qtiaudio", "feature_dlkm"), {
+        "true": ["audio_kernel_headers"],
+        default: [],
+    }),
+
+    shared_libs: [
+        "libar-pal",
+        "libaudioutils",
+        "libcutils",
+        "libdl",
+        "liblog",
+    ],
+
+    compile_multilib: "64",
+
+    relative_install_path: "soundfx",
+    vendor: true,
+    owner: "qti",
+}
+
+cc_library_shared {
+    name: "libmalistener",
+
+    cflags: select(soong_config_variable("ANDROID", "target_board_platform"), {
+        any @ board_platform: [
+            "-DHAL_LIB_NAME=\"audio.primary." + board_platform + ".so\"",
+        ],
+        default: [
+            "-DHAL_LIB_NAME=\"audio.primary.qcom.so\"",
+        ],
+    }),
+    srcs: ["ma_listener.c"],
+
+    shared_libs: [
+        "libcutils",
+        "libdl",
+        "liblog",
+    ],
+
+    relative_install_path: "soundfx",
+    owner: "google",
+    proprietary: true,
+
+    header_libs: [
+        "libarpal_headers",
+        "libhardware_headers",
+        "libsystem_headers",
+    ],
+}
