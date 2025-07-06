@@ -1,0 +1,20 @@
+cc_fuzz {
+    name: "aidl_fuzzer_audio_core_hal",
+    vendor: true,
+
+    srcs: ["fuzzer.cpp"],
+
+    shared_libs: [
+        "android.hardware.audio.core-V2-ndk",
+        "android.media.audio.common.types-V3-ndk",
+        "libbase",
+        "libbinder",
+        "libbinder_ndk",
+        "libclang_rt.ubsan_standalone",
+        "libcutils",
+        "libhardware",
+        "libutils",
+    ],
+
+    static_libs: ["libbinder_random_parcel"],
+}
