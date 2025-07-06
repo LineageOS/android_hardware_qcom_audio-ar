@@ -1,0 +1,16 @@
+cc_library_shared {
+    name: "libqcomvoiceprocessing",
+    defaults: ["aidlaudioeffectserviceqti_defaults"],
+    owner: "qti",
+    relative_install_path: "soundfx",
+    vendor: true,
+
+    srcs: [
+        "VoiceProcessing.cpp",
+        "VoiceProcessingContext.cpp",
+    ],
+
+    static_libs: [
+        "libaudioeffecthal_base_impl_static",
+    ],
+}
