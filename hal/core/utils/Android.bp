@@ -1,0 +1,30 @@
+cc_library_static {
+    name: "libaudiohalutils.qti",
+    owner: "qti",
+    vendor: true,
+
+    cflags: [
+        "-DBACKEND_NDK",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wthread-safety",
+    ],
+
+    srcs: ["Utils.cpp"],
+
+    export_include_dirs: ["include"],
+
+    local_include_dirs: ["include"],
+
+    header_libs: ["libaudio_system_headers"],
+
+    shared_libs: [
+        "android.hardware.audio.core-V2-ndk",
+        "android.media.audio.common.types-V3-ndk",
+        "libaudioutils",
+        "libbase",
+        "libutils",
+        "qti-audio-types-aidl-V1-ndk",
+    ],
+}
