@@ -1,0 +1,52 @@
+cc_library_shared {
+    name: "libqcomvisualizer",
+
+    defaults: [
+        "android_hardware_audio_config_defaults",
+        "qtiaudio_gcov_defaults",
+    ],
+
+    srcs: ["offload_visualizer.c"],
+
+    cflags: [
+        "-O2",
+        "-Wall",
+        "-Werror",
+        "-Wno-gnu-designator",
+        "-Wno-gnu-designator",
+        "-Wno-shorten-64-to-32",
+        "-Wno-sign-compare",
+        "-Wno-tautological-compare",
+        "-Wno-typedef-redefinition",
+        "-Wno-typedef-redefinition",
+        "-Wno-unused-function",
+        "-Wno-unused-label",
+        "-Wno-unused-local-typedef",
+        "-Wno-unused-parameter",
+        "-Wno-unused-parameter",
+        "-Wno-unused-value",
+        "-Wno-unused-variable",
+        "-Wno-unused-variable",
+        "-fvisibility=hidden",
+    ],
+
+    include_dirs: [
+        "system/media/audio_effects/include",
+    ],
+
+    header_libs: [
+        "libarpal_headers",
+        "libhardware_headers",
+        "libsystem_headers",
+    ],
+
+    shared_libs: [
+        "libar-pal",
+        "libcutils",
+        "libdl",
+        "liblog",
+    ],
+
+    relative_install_path: "soundfx",
+    vendor: true,
+}

@@ -1,0 +1,55 @@
+// audio preprocessing wrapper
+cc_library_shared {
+    name: "libqcomvoiceprocessing",
+
+    defaults: [
+        "qtiaudio_gcov_defaults",
+    ],
+
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-Wno-gnu-designator",
+        "-Wno-gnu-designator",
+        "-Wno-shorten-64-to-32",
+        "-Wno-sign-compare",
+        "-Wno-tautological-compare",
+        "-Wno-typedef-redefinition",
+        "-Wno-unused-function",
+        "-Wno-unused-function",
+        "-Wno-unused-label",
+        "-Wno-unused-local-typedef",
+        "-Wno-unused-parameter",
+        "-Wno-unused-value",
+        "-Wno-unused-variable",
+        "-Wno-unused-variable",
+        "-fvisibility=hidden",
+    ] + select(soong_config_variable("ANDROID", "target_board_auto,"), {
+        "true": [
+            "-O2",
+            "-D_FORTIFY_SOURCE=2",
+            "-fstack-protector-strong",
+        ],
+        default: [],
+    }),
+
+    relative_install_path: "soundfx",
+    vendor: true,
+    owner: "qti",
+
+    srcs: ["voice_processing.c"],
+
+    shared_libs: [
+        "libcutils",
+        "libdl",
+        "liblog",
+    ],
+
+    include_dirs: [
+        "system/media/audio_effects/include",
+    ],
+
+    header_libs: [
+        "libhardware_headers",
+    ],
+}
