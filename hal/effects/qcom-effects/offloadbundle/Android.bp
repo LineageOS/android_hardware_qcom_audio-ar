@@ -1,0 +1,25 @@
+cc_library_shared {
+    name: "libqcompostprocbundle",
+    defaults: ["aidlaudioeffectserviceqti_defaults"],
+    owner: "qti",
+    relative_install_path: "soundfx",
+    vendor: true,
+
+    srcs: [
+        "OffloadBundleAidl.cpp",
+        "OffloadBundleContext.cpp",
+        "BassBoostContext.cpp",
+        "EqualizerContext.cpp",
+        "ReverbContext.cpp",
+        "VirtualizerContext.cpp",
+        "ParamDelegator.cpp",
+    ],
+
+    shared_libs: [
+        "libar-pal",
+    ],
+
+    static_libs: [
+        "libaudioeffecthal_base_impl_static",
+    ],
+}

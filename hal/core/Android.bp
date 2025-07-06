@@ -1,0 +1,165 @@
+cc_library_shared {
+    name: "libaudiocorehal.qti",
+    relative_install_path: "hw",
+    vendor: true,
+
+    vintf_fragments: select(soong_config_variable("ANDROID", "target_board_platform"), {
+        any @ board_platform: ["configs/" + board_platform + "/manifest_audio_qti_services.xml"],
+        default: [],
+    }),
+
+    cflags: [
+        "-DBACKEND_NDK",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wthread-safety",
+    ],
+
+    srcs: [
+        "CoreService.cpp",
+        "Bluetooth.cpp",
+        "Module.cpp",
+        "ModulePrimary.cpp",
+        "ModuleStub.cpp",
+        "SoundDose.cpp",
+        "StreamWorker.cpp",
+        "Stream.cpp",
+        "StreamStub.cpp",
+        "Telephony.cpp",
+        "StreamInPrimary.cpp",
+        "StreamOutPrimary.cpp",
+        "HalOffloadEffects.cpp",
+    ],
+
+    local_include_dirs: ["include"],
+
+    header_libs: [
+        "libaudio_system_headers",
+        "libaudioclient_headers",
+        "libaudioeffects",
+        "liberror_headers",
+        "libmedia_helper_headers",
+        "libxsdc-utils",
+    ],
+
+    shared_libs: [
+        "android.hardware.audio.core-V2-ndk",
+        "android.hardware.audio.core.sounddose-V1-ndk",
+        "android.hardware.audio.effect-V2-ndk",
+        "android.hardware.common-V2-ndk",
+        "android.media.audio.common.types-V3-ndk",
+        "libar-pal",
+        "libaudioplatformconverter.qti",
+        "libaudioserviceexampleimpl",
+        "libaudioutils",
+        "libbase",
+        "libbinder_ndk",
+        "libcutils",
+        "libdl",
+        "libfmq",
+        "libhardware",
+        "libhidlbase",
+        "liblog",
+        "libmedia_helper",
+        "libmediautils_vendor",
+        "libmemunreachable",
+        "libstagefright_foundation",
+        "libutils",
+        "libxml2",
+        "qti-audio-types-aidl-V1-ndk",
+    ],
+
+    static_libs: [
+        "libaudio_module_config.qti",
+        "libaudiocore.extension",
+        "libaudiohalutils.qti",
+    ],
+
+    whole_static_libs: ["libaudioplatform.qti"],
+}
+
+cc_library_static {
+    name: "libaudiocore.extension",
+    vendor: true,
+
+    cflags: [
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wthread-safety",
+    ],
+
+    srcs: ["extensions/AudioExtension.cpp"],
+
+    export_include_dirs: ["extensions/include"],
+
+    local_include_dirs: [
+        "extensions/include",
+        "platform/include",
+        "utils/include",
+    ],
+
+    header_libs: [
+        "libaudioclient_headers",
+        "libexpectedutils_headers",
+        "libmedia_helper_headers",
+    ],
+
+    shared_libs: [
+        "android.hardware.audio.core-V2-ndk",
+        "android.hardware.common-V2-ndk",
+        "android.hardware.common.fmq-V1-ndk",
+        "android.media.audio.common.types-V3-ndk",
+        "libar-pal",
+        "libbase",
+        "libbinder_ndk",
+        "libcutils",
+        "libfmq",
+        "liblog",
+        "libmedia_helper",
+        "libstagefright_foundation",
+        "libutils",
+        "libxml2",
+        "qti-audio-types-aidl-V1-ndk",
+    ],
+}
+
+cc_library_static {
+    name: "libaudioplatform.qti",
+    owner: "qti",
+    vendor: true,
+
+    srcs: [
+        "platform/AudioUsecase.cpp",
+        "platform/Platform.cpp",
+        "platform/PlatformUtils.cpp",
+    ],
+
+    export_include_dirs: ["platform/include"],
+
+    include_dirs: [
+        "system/media/audio/include",
+        "hardware/libhardware/include",
+    ],
+
+    local_include_dirs: [
+        "platform/include",
+        "extensions/include",
+    ],
+
+    shared_libs: [
+        "android.hardware.audio.core-V2-ndk",
+        "android.media.audio.common.types-V3-ndk",
+        "libar-pal",
+        "libaudioplatformconverter.qti",
+        "libbase",
+        "libbinder_ndk",
+        "libstagefright_foundation",
+        "qti-audio-types-aidl-V1-ndk",
+    ],
+
+    static_libs: ["libaudiohalutils.qti"],
+
+    whole_static_libs: ["libaudio_microphoneinfo_parser"],
+}
