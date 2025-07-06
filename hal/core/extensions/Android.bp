@@ -1,0 +1,113 @@
+cc_library_shared {
+    name: "libhfp_pal",
+    vendor: true,
+
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-Wno-unused-function",
+        "-Wno-unused-variable",
+    ] + select(soong_config_variable("qtiaudio", "feature_hfp_server_client"), {
+        "true": ["-DHFP_SERVER_CLIENT_ENABLED"],
+        default: [],
+    }) + select(soong_config_variable("ANDROID", "target_board_auto"), {
+        "true": ["-DPLATFORM_AUTO"],
+        default: [],
+    }),
+
+    cppflags: ["-fexceptions"],
+
+    srcs: ["Hfp.cpp"],
+
+    include_dirs: [
+        "external/expat/lib",
+        "system/media/audio_route/include",
+        "system/media/audio_utils/include",
+    ],
+
+    header_libs: [
+        "libhardware_headers",
+        "libsystem_headers",
+    ],
+
+    shared_libs: [
+        "libar-pal",
+        "libaudioroute",
+        "libaudioutils",
+        "libbase",
+        "libcutils",
+        "libdl",
+        "libexpat",
+        "liblog",
+    ],
+}
+
+cc_library_shared {
+    name: "libfmpal",
+    vendor: true,
+
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-Wno-unused-function",
+        "-Wno-unused-variable",
+    ],
+
+    srcs: ["FM.cpp"],
+
+    include_dirs: [
+        "external/expat/lib",
+        "system/media/audio_route/include",
+        "system/media/audio_utils/include",
+    ],
+
+    header_libs: [
+        "libhardware_headers",
+        "libsystem_headers",
+    ],
+
+    shared_libs: [
+        "libar-pal",
+        "libaudioroute",
+        "libaudioutils",
+        "libbase",
+        "libcutils",
+        "libdl",
+        "libexpat",
+        "liblog",
+    ],
+}
+
+cc_library_shared {
+    name: "libbatterylistener",
+    vendor: true,
+
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-Wno-unused-function",
+        "-Wno-unused-variable",
+    ],
+
+    srcs: ["battery_listener.cpp"],
+
+    local_include_dirs: ["include"],
+
+    shared_libs: [
+        "android.hardware.health@1.0",
+        "android.hardware.health@2.0",
+        "android.hardware.health@2.1",
+        "android.hardware.health-V1-ndk",
+        "android.hardware.power@1.2",
+        "libaudioutils",
+        "libbase",
+        "libbinder_ndk",
+        "libcutils",
+        "libdl",
+        "libhidlbase",
+        "liblog",
+        "libutils",
+    ],
+
+    static_libs: ["libhealthhalutils"],
+}

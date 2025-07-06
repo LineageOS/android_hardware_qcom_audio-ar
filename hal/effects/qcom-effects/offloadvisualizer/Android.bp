@@ -1,0 +1,24 @@
+cc_library_shared {
+    name: "libqcomvisualizer",
+    defaults: ["aidlaudioeffectserviceqti_defaults"],
+    owner: "qti",
+    relative_install_path: "soundfx",
+    vendor: true,
+
+    srcs: [
+        "VisualizerOffload.cpp",
+        "VisualizerOffloadContext.cpp",
+    ],
+
+    header_libs: [
+        "libaudioutils_headers",
+    ],
+
+    shared_libs: [
+        "libar-pal",
+    ],
+
+    static_libs: [
+        "libaudioeffecthal_base_impl_static",
+    ],
+}
