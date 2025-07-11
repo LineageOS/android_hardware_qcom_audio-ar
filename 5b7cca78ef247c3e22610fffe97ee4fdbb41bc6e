@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c2589901_32a2c309",
+        "filename": "audio-effects/post_proc/Android.bp",
+        "patchSetId": 1
+      },
+      "lineNbr": 164,
+      "author": {
+        "id": 21290
+      },
+      "writtenOn": "2025-07-11T11:24:09Z",
+      "side": 1,
+      "message": "this should be removed, android_hardware_audio_config_defaults takes care of it",
+      "range": {
+        "startLine": 164,
+        "startChar": 4,
+        "endLine": 164,
+        "endChar": 20
+      },
+      "revId": "5b7cca78ef247c3e22610fffe97ee4fdbb41bc6e",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    }
+  ]
+}
