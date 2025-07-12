@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9c89aedd_12c4130e",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 32837
+      },
+      "writtenOn": "2025-07-12T04:52:07Z",
+      "side": 1,
+      "message": "Greetings. The assembly was successful for the entire audio and display. But there is a problem - the audio server has prescribed aidl audio and is persistently trying to launch it. (and since there is no such thing, I end up in a cyclic overload of the audio server)\n\nsm8450",
+      "revId": "00d2f8fb91af2d6dbdd550b296f8720c1b462463",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    }
+  ]
+}
