@@ -43,7 +43,7 @@
 #define AHAL_LOG_DBG             (0x8) /**< debug message, required at minimum for debug.*/
 #define AHAL_LOG_VERBOSE         (0x10)/**< verbose message, useful primarily to help developers debug low-level code */
 
-static uint32_t ahal_log_lvl = AHAL_LOG_ERR|AHAL_LOG_WARN|AHAL_LOG_INFO|AHAL_LOG_DBG; /*TODO make this dynamic*/
+static uint32_t ahal_log_lvl = AHAL_LOG_ERR|AHAL_LOG_WARN|AHAL_LOG_INFO|AHAL_LOG_DBG|AHAL_LOG_VERBOSE; /*TODO make this dynamic*/
 
 
 #define AHAL_ERR(arg,...)                                          \
