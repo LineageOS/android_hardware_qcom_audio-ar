@@ -93,7 +93,7 @@ cc_library_shared {
         "-Wno-unused-variable",
         "-fvisibility=hidden",
     ] + select(soong_config_variable("ANDROID", "target_board_platform"), {
-        any @ board_platform: ["-DPLATFORM_NAME=\"" + board_platform + "\""],
+        any @ board_platform: ["-DPLATFORM_NAME=\" + board_platform + \""],
         default: ["-DPLATFORM_NAME=\"qcom\""],
     }),
 
