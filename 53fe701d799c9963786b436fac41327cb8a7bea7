@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d9767440_845f9491",
+        "filename": "hal/Android.bp",
+        "patchSetId": 1
+      },
+      "lineNbr": 80,
+      "author": {
+        "id": 13648
+      },
+      "writtenOn": "2025-07-15T23:29:51Z",
+      "side": 1,
+      "message": "Is this correct? See: https://review.lineageos.org/c/LineageOS/android_hardware_qcom_audio-ar/+/437359",
+      "range": {
+        "startLine": 80,
+        "startChar": 8,
+        "endLine": 80,
+        "endChar": 91
+      },
+      "revId": "53fe701d799c9963786b436fac41327cb8a7bea7",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    }
+  ]
+}
