@@ -97,40 +97,29 @@ cc_library_shared {
     vendor: true,
 
     cflags: [
+        "-DHEALTH_AIDL",
         "-Wall",
         "-Werror",
         "-Wno-unused-function",
         "-Wno-unused-variable",
-    ] + select(soong_config_variable("ANDROID", "target_board_platform"), {
-        "anorak": [],
-        "anorak61": [],
-        default: ["-DHEALTH_AIDL"],
-    }),
+    ],
 
     srcs: ["battery_listener.cpp"],
 
     local_include_dirs: ["inc"],
 
     shared_libs: [
-        "android.hardware.health@1.0",
-        "android.hardware.health@2.0",
-        "android.hardware.health@2.1",
+        "android.hardware.health-V1-ndk",
         "android.hardware.power@1.2",
         "libaudioutils",
         "libbase",
+        "libbinder_ndk",
         "libcutils",
         "libdl",
         "libhidlbase",
         "liblog",
         "libutils",
-    ] + select(soong_config_variable("ANDROID", "target_board_platform"), {
-        "anorak": [],
-        "anorak61": [],
-        default: [
-            "android.hardware.health-V1-ndk",
-            "libbinder_ndk",
-        ],
-    }),
+    ],
 
     static_libs: ["libhealthhalutils"],
 }
