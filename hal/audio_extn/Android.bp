@@ -97,43 +97,29 @@ cc_library_shared {
     vendor: true,
 
     cflags: [
+        "-DQTI_HEALTH",
         "-Wall",
         "-Werror",
         "-Wno-unused-function",
         "-Wno-unused-variable",
-    ] + select(soong_config_variable("ANDROID", "target_board_platform"), {
-        "bengal": ["-DQTI_HEALTH"],
-        "blair": ["-DQTI_HEALTH"],
-        default: [],
-    }),
+    ],
 
     srcs: ["battery_listener.cpp"],
 
     local_include_dirs: ["inc"],
 
     shared_libs: [
-        "android.hardware.health@1.0",
-        "android.hardware.health@2.0",
-        "android.hardware.health@2.1",
+        "android.hardware.health-V1-ndk",
         "android.hardware.power@1.2",
         "libaudioutils",
         "libbase",
+        "libbinder_ndk",
         "libcutils",
         "libdl",
         "libhidlbase",
         "liblog",
         "libutils",
-    ] + select(soong_config_variable("ANDROID", "target_board_platform"), {
-        "bengal": [
-            "android.hardware.health-V1-ndk",
-            "libbinder_ndk",
-        ],
-        "blair": [
-            "android.hardware.health-V1-ndk",
-            "libbinder_ndk",
-        ],
-        default: [],
-    }),
+    ],
 
     static_libs: ["libhealthhalutils"],
 }
