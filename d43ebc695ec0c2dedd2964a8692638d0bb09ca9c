@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d977322b_11d5f837",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 13648
+      },
+      "writtenOn": "2025-07-18T21:54:20Z",
+      "side": 1,
+      "message": "We don\u0027t have this change in lineage-22.2-caf-sm8750 branch. I don\u0027t think we need this.",
+      "revId": "d43ebc695ec0c2dedd2964a8692638d0bb09ca9c",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    }
+  ]
+}
