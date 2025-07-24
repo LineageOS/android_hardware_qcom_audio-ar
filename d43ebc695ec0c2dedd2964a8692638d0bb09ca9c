@@ -16,6 +16,23 @@
       "message": "We don\u0027t have this change in lineage-22.2-caf-sm8750 branch. I don\u0027t think we need this.",
       "revId": "d43ebc695ec0c2dedd2964a8692638d0bb09ca9c",
       "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "56139f74_9f76b8c2",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 30975
+      },
+      "writtenOn": "2025-07-24T02:22:22Z",
+      "side": 1,
+      "message": "This is not need for sun.",
+      "revId": "d43ebc695ec0c2dedd2964a8692638d0bb09ca9c",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
     }
   ]
 }
