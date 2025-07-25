@@ -60,10 +60,8 @@
 #define AFE_PROXY_RECORD_PERIOD_SIZE  768
 
 static bool karaoke = false;
-sink_metadata_t StreamInPrimary::btSinkMetadata;
-std::vector<record_track_metadata_t> StreamInPrimary::tracks;
-source_metadata_t StreamOutPrimary::btSourceMetadata;
-std::vector<playback_track_metadata_t> StreamOutPrimary::tracks;
+static sink_metadata_t btSinkMetadata = {};
+std::vector<record_track_metadata_t> tracks;
 
 static bool is_pcm_format(audio_format_t format)
 {
@@ -998,12 +996,14 @@ static void out_update_source_metadata_v7(
 
         ssize_t track_count = source_metadata->track_count;
         struct playback_track_metadata_v7* track = source_metadata->tracks;
-        astream_out->tracks.resize(track_count);
+        std::vector<playback_track_metadata_t> tracks;
+        tracks.resize(track_count);
 
         AHAL_VERBOSE("track count is %d",track_count);
 
-        astream_out->btSourceMetadata.track_count = track_count;
-        astream_out->btSourceMetadata.tracks = astream_out->tracks.data();
+        source_metadata_t btSourceMetadata;
+        btSourceMetadata.track_count = track_count;
+        btSourceMetadata.tracks = tracks.data();
         audio_mode_t mode;
         bool voice_active = false;
 
@@ -1024,35 +1024,25 @@ static void out_update_source_metadata_v7(
                 track->base.usage == AUDIO_USAGE_VOICE_COMMUNICATION &&
                 track->base.content_type == AUDIO_CONTENT_TYPE_SPEECH) {
                 AHAL_ERR("Unwanted track removed from the list");
-                astream_out->btSourceMetadata.track_count--;
+                btSourceMetadata.track_count--;
                 --track_count;
                 ++track;
             } else {
-                astream_out->btSourceMetadata.tracks->usage = track->base.usage;
-                astream_out->btSourceMetadata.tracks->content_type = track->base.content_type;
-                AHAL_DBG("Source metadata usage:%d content_type:%d",
-                    astream_out->btSourceMetadata.tracks->usage,
-                    astream_out->btSourceMetadata.tracks->content_type);
+                btSourceMetadata.tracks->usage = track->base.usage;
+                btSourceMetadata.tracks->content_type = track->base.content_type;
                 --track_count;
                 ++track;
-                ++astream_out->btSourceMetadata.tracks;
+                ++btSourceMetadata.tracks;
             }
         }
 
         // move pointer to base address and do setparam
-        astream_out->btSourceMetadata.tracks = astream_out->tracks.data();
+        btSourceMetadata.tracks = tracks.data();
 
-       /* During an active voice call, if new media/game session is launched APM sends
-        * source metadata to AHAL, so just cache it and don't send it
-        * to BT as it may be misinterpreted as reconfig.
-        */
-        if (!voice_active) {
-            // pass the metadata to PAL
-            ret = pal_set_param(PAL_PARAM_ID_SET_SOURCE_METADATA,
-                               (void*)&astream_out->btSourceMetadata, 0);
-            if (ret != 0) {
-                AHAL_ERR("Set PAL_PARAM_ID_SET_SOURCE_METADATA for %d failed", ret);
-            }
+        // pass the metadata to PAL
+        ret = pal_set_param(PAL_PARAM_ID_SET_SOURCE_METADATA,(void*)&btSourceMetadata,0);
+        if (ret != 0) {
+            AHAL_ERR("Set PAL_PARAM_ID_SET_SOURCE_METADATA for %d failed", ret);
         }
     }
 }
@@ -1420,8 +1410,6 @@ static void in_update_sink_metadata_v7(
        ssize_t track_count = sink_metadata->track_count;
        struct record_track_metadata_v7* track = sink_metadata->tracks;
        AHAL_DBG("track count is %d with channel_mask %d",track_count, track->channel_mask);
-       audio_mode_t mode;
-       bool voice_active = false;
 
        if (!track_count) return;
 
@@ -1433,39 +1421,24 @@ static void in_update_sink_metadata_v7(
         */
        if (track->channel_mask == 0) return;
 
-       astream_in->tracks.resize(track_count);
+       tracks.resize(track_count);
 
-       astream_in->btSinkMetadata.track_count = track_count;
-       astream_in->btSinkMetadata.tracks = astream_in->tracks.data();
-
-       if (adevice && adevice->voice_) {
-           voice_active = adevice->voice_->get_voice_call_state(&mode);
-       } else {
-           AHAL_ERR("adevice voice is null");
-       }
+       btSinkMetadata.track_count = track_count;
+       btSinkMetadata.tracks = tracks.data();
 
        // copy all tracks info from sink_metadata_v7 to sink_metadata
        while (track_count && track) {
-           astream_in->btSinkMetadata.tracks->source = track->base.source;
-           AHAL_DBG("Sink metadata source:%d", astream_in->btSinkMetadata.tracks->source);
+           btSinkMetadata.tracks->source = track->base.source;
            --track_count;
            ++track;
-           ++astream_in->btSinkMetadata.tracks;
+           ++btSinkMetadata.tracks;
        }
 
-       astream_in->btSinkMetadata.tracks = astream_in->tracks.data();
-
-       /* During an active voice call, if new record/vbc session is launched APM sends
-        * sink metadata to AHAL, so just cache it and don't send it to BT as it may
-        * be misinterpreted as reconfig.
-        */
-       if (!voice_active) {
-           //pass the metadata to PAL
-           ret = pal_set_param(PAL_PARAM_ID_SET_SINK_METADATA,
-                               (void*)&astream_in->btSinkMetadata, 0);
-           if (ret != 0) {
-               AHAL_ERR("Set PAL_PARAM_ID_SET_SINK_METADATA for %d failed", ret);
-           }
+       btSinkMetadata.tracks = tracks.data();
+       //pass the metadata to PAL
+       ret = pal_set_param(PAL_PARAM_ID_SET_SINK_METADATA,(void*)&btSinkMetadata,0);
+       if (ret != 0) {
+           AHAL_ERR("Set PAL_PARAM_ID_SET_SINK_METADATA for %d failed", ret);
        }
     }
   }
@@ -2389,36 +2362,6 @@ int StreamOutPrimary::RouteStream(const std::set<audio_devices_t>& new_devices, 
                        sizeof(mPalOutDevice[i].custom_config.custom_key));
             }
 
-            /* During ongoing media/gaming session, if BT device is reconncted since stream
-             * is active on other device APM doesn't send metadata explicitly to AHAL. In
-             * that case, send cachedsource metadata so that encoder session will be
-             * configured accordingly and then switch to BLE device
-             */
-            if ((mPalOutDeviceIds[i] == PAL_DEVICE_OUT_BLUETOOTH_BLE) &&
-                (btSourceMetadata.track_count != 0)) {
-                audio_mode_t mode;
-                bool voice_active = false;
-
-                if (adevice && adevice->voice_) {
-                    voice_active = adevice->voice_->get_voice_call_state(&mode);
-                } else {
-                    AHAL_ERR("adevice voice is null");
-                }
-
-                /* If voice call is in active state we sent voice context as a part metadata
-                 * to BT. During active voice call, when APM tries to route media/touchtone
-                 * streams, don't send cached metadata(media/ringtone) to BT as it may
-                 * be misinterpreted as reconfig.
-                 */
-                if (!voice_active) {
-                    //pass the metadata to PAL
-                    ret = pal_set_param(PAL_PARAM_ID_SET_SOURCE_METADATA,
-                                        (void*)&btSourceMetadata, 0);
-                    if (ret != 0) {
-                        AHAL_ERR("Set PAL_PARAM_ID_SET_SOURCE_METADATA for %d failed", ret);
-                    }
-                }
-            }
 #ifdef DYNAMIC_SR_ENABLED
             if (((usecase_ == USECASE_AUDIO_PLAYBACK_VOIP) ||
                   (usecase_ == USECASE_AUDIO_PLAYBACK_DEEP_BUFFER) ||
@@ -4309,28 +4252,10 @@ int StreamInPrimary::RouteStream(const std::set<audio_devices_t>& new_devices, b
              */
             if ((mPalInDeviceIds[i] == PAL_DEVICE_IN_BLUETOOTH_BLE) &&
                 (btSinkMetadata.track_count != 0)) {
-                audio_mode_t mode;
-                bool voice_active = false;
-
-                if (adevice && adevice->voice_) {
-                    voice_active = adevice->voice_->get_voice_call_state(&mode);
-                }
-                else {
-                    AHAL_ERR("adevice voice is null");
-                }
-
-                /* If voice call is in active state we sent voice context as a part metadata
-                 * to BT. During active voice call, when APM tries to route record/vbc
-                 * streams, don't send cached metadata to BT as it may be misinterpreted
-                 * as reconfig.
-                 */
-                if (!voice_active) {
-                    //pass the metadata to PAL
-                    ret = pal_set_param(PAL_PARAM_ID_SET_SINK_METADATA,
-                        (void*)&btSinkMetadata, 0);
-                    if (ret != 0) {
-                        AHAL_ERR("Set PAL_PARAM_ID_SET_SINK_METADATA for %d failed", ret);
-                    }
+                //pass the metadata to PAL
+                ret = pal_set_param(PAL_PARAM_ID_SET_SINK_METADATA, (void*)&btSinkMetadata, 0);
+                if (ret != 0) {
+                    AHAL_ERR("Set PAL_PARAM_ID_SET_SINK_METADATA for %d failed", ret);
                 }
             }
 

@@ -123,6 +123,5 @@ public:
     ~AudioVoice();
     pal_device_id_t pal_voice_tx_device_id_;
     pal_device_id_t pal_voice_rx_device_id_;
-    std::shared_ptr<StreamInPrimary> stream_in_primary_;
 };
 #endif  // ANDROID_HARDWARE_AHAL_VOICE_H_
