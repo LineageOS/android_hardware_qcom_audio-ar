@@ -41,7 +41,6 @@
 #include "AudioVoice.h"
 #include "PalApi.h"
 #include "AudioCommon.h"
-#include <AudioExtn.h>
 
 #ifndef AUDIO_MODE_CALL_SCREEN
 #define AUDIO_MODE_CALL_SCREEN 4
@@ -470,17 +469,8 @@ int AudioVoice::RouteStream(const std::set<audio_devices_t>& rx_devices) {
             ret = UpdateCalls(voice_.session);
         }
     } else {
-        // do device switch here
+        //do device switch here
         for (int i = 0; i < max_voice_sessions_; i++) {
-             {
-                /* already in call, and now if BLE is connected send metadata
-                 * so that BLE can be configured for call and then switch to
-                 * BLE device
-                 */
-                updateVoiceMetadataForBT(true);
-                // dont start the call, until we get suspend from BLE
-                std::unique_lock<std::mutex> guard(reconfig_wait_mutex_);
-             }
              ret = VoiceSetDevice(&voice_.session[i]);
              if (ret)
                  AHAL_ERR("Device switch failed for session[%d]", i);
@@ -492,17 +482,6 @@ int AudioVoice::RouteStream(const std::set<audio_devices_t>& rx_devices) {
 exit:
     AHAL_DBG("Exit ret: %d", ret);
     return ret;
-}
-
-bool AudioVoice::get_voice_call_state(audio_mode_t *mode) {
-    int i, ret = 0;
-    *mode = mode_;
-    for (i = 0; i < max_voice_sessions_; i++) {
-        if (voice_.session[i].state.current_ == CALL_ACTIVE) {
-            return true;
-        }
-    }
-    return false;
 }
 
 int AudioVoice::UpdateCallState(uint32_t vsid, int call_state) {
@@ -553,12 +532,9 @@ int AudioVoice::UpdateCalls(voice_session_t *pSession) {
             {
             case CALL_INACTIVE:
                 AHAL_DBG("INACTIVE -> ACTIVE vsid:%x", session->vsid);
-                {
+                if (pal_voice_rx_device_id_ == PAL_DEVICE_OUT_BLUETOOTH_BLE) {
                     updateVoiceMetadataForBT(true);
-                    // dont start the call, until we get suspend from BLE
-                    std::unique_lock<std::mutex> guard(reconfig_wait_mutex_);
                 }
-
                 ret = VoiceStart(session);
                 if (ret < 0) {
                     AHAL_ERR("VoiceStart() failed");
@@ -584,9 +560,6 @@ int AudioVoice::UpdateCalls(voice_session_t *pSession) {
                 } else {
                     session->state.current_ = session->state.new_;
                 }
-
-                AHAL_DBG("ACTIVE -> INACTIVE update meta data as MUSIC");
-                updateVoiceMetadataForBT(false);
                 break;
 
             default:
@@ -718,7 +691,7 @@ int AudioVoice::VoiceStart(voice_session_t *session) {
     streamAttributes.out_media_config.aud_fmt_id = PAL_AUDIO_FMT_PCM_S16_LE; // TODO: need to convert this from output format
 
     /*set custom key for hac mode*/
-    if (session && session->hac && palDevices[1].id ==
+    if (session && session->hac && palDevices[1].id == 
         PAL_DEVICE_OUT_HANDSET) {
         strlcat(palDevices[0].custom_config.custom_key, "HAC;",
                     sizeof(palDevices[0].custom_config.custom_key));
@@ -984,7 +957,7 @@ int AudioVoice::VoiceSetDevice(voice_session_t *session) {
             }
     }
     /*set or remove custom key for hac mode*/
-    if (session && session->hac && palDevices[1].id ==
+    if (session && session->hac && palDevices[1].id == 
         PAL_DEVICE_OUT_HANDSET) {
         strlcat(palDevices[0].custom_config.custom_key, "HAC;",
                     sizeof(palDevices[0].custom_config.custom_key));
@@ -1073,26 +1046,16 @@ void AudioVoice::updateVoiceMetadataForBT(bool call_active)
 
     AHAL_INFO("track count is %d", track_count);
 
-    source_metadata_t btSourceMetadata;
+    if (call_active) {
+        source_metadata_t btSourceMetadata;
+        btSourceMetadata.track_count = track_count;
+        btSourceMetadata.tracks = tracks.data();
 
-    if (pal_voice_rx_device_id_ == PAL_DEVICE_OUT_BLUETOOTH_BLE) {
-        if (call_active) {
-            btSourceMetadata.track_count = track_count;
-            btSourceMetadata.tracks = tracks.data();
+        btSourceMetadata.tracks->usage = AUDIO_USAGE_VOICE_COMMUNICATION;
+        btSourceMetadata.tracks->content_type = AUDIO_CONTENT_TYPE_SPEECH;
 
-            btSourceMetadata.tracks->usage = AUDIO_USAGE_VOICE_COMMUNICATION;
-            btSourceMetadata.tracks->content_type = AUDIO_CONTENT_TYPE_SPEECH;
-            // pass the metadata to PAL
-            pal_set_param(PAL_PARAM_ID_SET_SOURCE_METADATA, (void*)&btSourceMetadata, 0);
-        } else {
-            btSourceMetadata.track_count = track_count;
-            btSourceMetadata.tracks = tracks.data();
-
-            btSourceMetadata.tracks->usage = AUDIO_USAGE_MEDIA;
-            btSourceMetadata.tracks->content_type = AUDIO_CONTENT_TYPE_MUSIC;
-            // pass the metadata to PAL
-            pal_set_param(PAL_PARAM_ID_SET_SOURCE_METADATA, (void*)&btSourceMetadata, 0);
-        }
+        //pass the metadata to PAL
+        pal_set_param(PAL_PARAM_ID_SET_SOURCE_METADATA,(void*)&btSourceMetadata,0);
     }
 }
 
