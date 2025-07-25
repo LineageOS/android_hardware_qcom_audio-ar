@@ -60,8 +60,6 @@
 #define AFE_PROXY_RECORD_PERIOD_SIZE  768
 
 static bool karaoke = false;
-static sink_metadata_t btSinkMetadata = {};
-std::vector<record_track_metadata_t> tracks;
 
 static bool is_pcm_format(audio_format_t format)
 {
@@ -1398,8 +1396,10 @@ static void in_update_sink_metadata_v7(
         */
        if (track->channel_mask == 0) return;
 
+       std::vector<record_track_metadata_t> tracks;
        tracks.resize(track_count);
 
+       sink_metadata_t btSinkMetadata;
        btSinkMetadata.track_count = track_count;
        btSinkMetadata.tracks = tracks.data();
 
@@ -4222,18 +4222,6 @@ int StreamInPrimary::RouteStream(const std::set<audio_devices_t>& new_devices, b
                 strlcat(mPalInDevice[i].custom_config.custom_key, "camcorder_landscape;",
                         sizeof(mPalInDevice[i].custom_config.custom_key));
                 AHAL_INFO("Setting custom key as %s", mPalInDevice[i].custom_config.custom_key);
-            }
-
-            /* During ongoing stereorecording, if BT device is reconncted send metadata so that
-             * decoder session will be configured for record and then switch to BLE device
-             */
-            if ((mPalInDeviceIds[i] == PAL_DEVICE_IN_BLUETOOTH_BLE) &&
-                (btSinkMetadata.track_count != 0)) {
-                //pass the metadata to PAL
-                ret = pal_set_param(PAL_PARAM_ID_SET_SINK_METADATA, (void*)&btSinkMetadata, 0);
-                if (ret != 0) {
-                    AHAL_ERR("Set PAL_PARAM_ID_SET_SINK_METADATA for %d failed", ret);
-                }
             }
 
 #ifdef DYNAMIC_SR_ENABLED
