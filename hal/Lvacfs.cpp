@@ -107,8 +107,7 @@ void Lvacfs::startInputStream(StreamInPrimary* in) {
     wrapper_ops_->set_params_file_path(params_file_path_);
     int channel_count = audio_channel_count_from_in_mask(in->config_.channel_mask);
     uint32_t channels = ((channel_count & 0xFFFF) << 16) | (channel_count & 0xFFFF);
-    // Set format to false (0) since lvacfs does not support pal audio format
-    uint64_t sample_rate_and_format = ((uint64_t)0 << 32) | in->config_.sample_rate;
+    uint64_t sample_rate_and_format = (((uint64_t)in->config_.format - 1) << 32) | in->config_.sample_rate;
     int ret = wrapper_ops_->create_instance(in->lvacfs_handle, in->source_, sample_rate_and_format,
                                             channels);
     if (ret < 0) {
@@ -120,7 +119,7 @@ void Lvacfs::startInputStream(StreamInPrimary* in) {
 void Lvacfs::processInputStream(StreamInPrimary* in, void* buffer, size_t bytes) {
     std::lock_guard<std::mutex> lock(in->lvacfs_lock);
     int channel_count = audio_channel_count_from_in_mask(in->config_.channel_mask);
-    uint32_t num_frames = bytes / (channel_count * audio_bytes_per_sample(in->config_.format));
+    uint32_t num_frames = bytes / (channel_count * audio_bytes_per_sample((audio_format_t)(in->config_.format - 1)));
     uint8_t status_buffer[0x160] = {0};
     int ret = wrapper_ops_->process(in->lvacfs_handle, buffer, buffer, num_frames, status_buffer);
     if (ret < 0) {
