@@ -143,10 +143,6 @@ AUDIO_MODULES += libvui_intf
 AUDIO_MODULES += libVoiceSdk
 AUDIO_MODULES += libtensorflowlite_c
 AUDIO_MODULES += libqasr
-AUDIO_MODULES += libQnnHtp
-AUDIO_MODULES += libQnnHtpV79Skel
-AUDIO_MODULES += libQnnHtpV79Stub
-AUDIO_MODULES += libQnnSystem
 
 AUDIO_MODULES += $(AUDIO_AGM)
 AUDIO_MODULES += $(AUDIO_PAL)

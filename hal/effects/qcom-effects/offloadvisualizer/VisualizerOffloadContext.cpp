@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2023-2025 Qualcomm Innovation Center, Inc. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
-#define LOG_TAG "AHAL_Effect_VisualizerQti"
+#define LOG_TAG "AHAL_Effect_VisualizerContextQti"
 #include "VisualizerOffloadContext.h"
 
 #include <android/binder_status.h>
@@ -167,7 +167,7 @@ int VisualizerOffloadContext::startThreadLoop() {
     std::lock_guard lg(mMutex);
     mCaptureThreadHandler = std::thread(&VisualizerOffloadContext::captureThreadLoop, this);
     if (!mCaptureThreadHandler.joinable()) {
-        LOG(ERROR) << __func__ << "fail to create captureThreadLoop";
+        LOG(ERROR) << __func__ << "failed to create captureThreadLoop";
         return -EINVAL;
     }
     mExitThread = false;
@@ -194,7 +194,7 @@ void VisualizerOffloadContext::captureThreadLoop() {
     StreamProxy streamProxy;
 
     if (!streamProxy.isStreamStarted()) return;
-    LOG(INFO) << __func__ << "Capture Thread Enter ";
+    LOG(INFO) << __func__ << " entering threadloop ";
 
     while (true) {
         {
@@ -204,12 +204,15 @@ void VisualizerOffloadContext::captureThreadLoop() {
                                          [this] { return mState == State::ACTIVE || mExitThread; });
             LOG(VERBOSE) << __func__ << " done waiting for active state";
 
-            if (mExitThread) break;
+            if (mExitThread) {
+                LOG(INFO) << __func__ << " Exiting threadloop";
+                break;
+            }
         }
         process(streamProxy.read());
     }
 
-    LOG(DEBUG) << __func__ << " Capture Thread Exit ";
+    LOG(DEBUG) << __func__ << " completed threadloop";
 }
 
 VisualizerOffloadContext::VisualizerOffloadContext(
@@ -227,12 +230,16 @@ VisualizerOffloadContext::VisualizerOffloadContext(
 }
 
 VisualizerOffloadContext::~VisualizerOffloadContext() {
-    std::lock_guard lg(mMutex);
-    LOG(DEBUG) << __func__;
-    mState = State::UNINITIALIZED;
+    LOG(DEBUG) << __func__ << " ioHandle " << getIoHandle();
+    {
+        std::lock_guard lg(mMutex);
+        mState = State::UNINITIALIZED;
+    }
+    stopThreadLoop();
 }
 
 RetCode VisualizerOffloadContext::enable() {
+    LOG(DEBUG) << __func__ << " ioHandle " << getIoHandle();
     std::lock_guard lg(mMutex);
     if (mState != State::INITIALIZED) {
         return RetCode::ERROR_EFFECT_LIB_ERROR;
@@ -243,6 +250,7 @@ RetCode VisualizerOffloadContext::enable() {
 }
 
 RetCode VisualizerOffloadContext::disable() {
+    LOG(DEBUG) << __func__ << " ioHandle " << getIoHandle();
     std::lock_guard lg(mMutex);
     if (mState != State::ACTIVE) {
         return RetCode::ERROR_EFFECT_LIB_ERROR;
