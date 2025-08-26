@@ -24,11 +24,9 @@
 <!-- BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,  -->
 <!-- OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN -->
 <!-- IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                          -->
-
-<!-- Changes from Qualcomm Innovation Center are provided under the following license:    -->
-<!--                                                                                      -->
-<!-- Copyright (c) 2022, 2024-2025 Qualcomm Innovation Center, Inc. All rights reserved.       -->
-<!-- SPDX-License-Identifier: BSD-3-Clause-Clear                                          -->
+<!--  Changes from Qualcomm Technologies, Inc. are provided under the following license:-->
+<!-- Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.     -->
+<!-- SPDX-License-Identifier: BSD-3-Clause-Clear                            -->
 <mixer>
     <!-- These are the initial mixer settings -->
     <ctl name="Voice Rx Device Mute" id="0" value="0" />
@@ -2736,10 +2734,14 @@
         <ctl name="RX INT1_1 MIX1 INP0" value="RX1" />
         <ctl name="RX INT0 DEM MUX" value="CLSH_DSM_OUT" />
         <ctl name="RX INT1 DEM MUX" value="CLSH_DSM_OUT" />
-        <ctl name="HPHL_RDAC Switch" value="1" />
-        <ctl name="HPHR_RDAC Switch" value="1" />
         <ctl name="LO_RDAC Switch" value="1" />
         <ctl name="SpkrMono WSA_RDAC" value="Switch" />
+        <ctl name="RX_COMP1 Switch" value="1" />
+        <ctl name="RX_COMP2 Switch" value="1" />
+        <ctl name="HPHL_COMP Switch" value="1" />
+        <ctl name="HPHR_COMP Switch" value="1" />
+        <ctl name="HPHL_RDAC Switch" value="1" />
+        <ctl name="HPHR_RDAC Switch" value="1" />
     </path>
 
     <path name="speaker-and-headphones-hifi-filter">
@@ -3605,6 +3607,11 @@
     <path name="va-mic-mono-lpi">
         <ctl name="LPI Enable" value="1" />
         <path name="va-mic-mono" />
+    </path>
+
+    <path name="va-mic-dmic-lpi">
+        <ctl name="LPI Enable" value="1" />
+        <path name="va-mic-dmic" />
     </path>
 
     <path name="headset-va-mic">

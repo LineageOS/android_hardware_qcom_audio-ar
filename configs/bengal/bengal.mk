@@ -162,7 +162,7 @@ ifneq ($(TARGET_HAS_QTI_OPTIMIZATIONS), true)
 PRODUCT_PACKAGES += audioadsprpcd
 PRODUCT_PACKAGES += vendor.qti.audio-adsprpc-service.rc
 endif
-ifneq ($(TARGET_BOARD_SUFFIX),_515_32go)
+ifeq ($(filter _515_32go _515s_32go _515tiny_32go, $(TARGET_BOARD_SUFFIX)),)
 PRODUCT_PACKAGES += android.hardware.audio.service_64
 PRODUCT_PACKAGES += android.hardware.audio.service_64.rc
 else
@@ -515,7 +515,7 @@ vendor.audio.gsl.shmem.dmaheap.uncached=true \
 vendor.audio.feature.snd_mon.enable=true
 
 # for HIDL related packages
-ifneq ($(TARGET_BOARD_SUFFIX),_515_32go)
+ifeq ($(filter _515_32go _515s_32go _515tiny_32go, $(TARGET_BOARD_SUFFIX)),)
 PRODUCT_PACKAGES += \
     android.hardware.audio@2.0-service_64
 else

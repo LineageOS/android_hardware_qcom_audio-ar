@@ -1,6 +1,6 @@
 LOCAL_PATH := $(call my-dir)
 
-ifneq ($(TARGET_BOARD_SUFFIX),_515_32go)
+ifeq ($(filter _515_32go _515s_32go _515tiny_32go, $(TARGET_BOARD_SUFFIX)),)
 LOCAL_AUDIO_SERVICE_64 := taro parrot bengal holi blair
 endif #TARGET_BOARD_SUFFIX
 
