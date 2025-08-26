@@ -80,7 +80,7 @@ struct hfp_module {
     uint32_t sample_rate;
     pal_stream_handle_t *rx_stream_handle;
     pal_stream_handle_t *tx_stream_handle;
-    pal_device_id_t preferred_dev_id[2] = {PAL_DEVICE_OUT_MIN, PAL_DEVICE_IN_MIN};
+    pal_device preferred_dev[2] = {};
 };
 
 #define PLAYBACK_VOLUME_MAX 0x2000
@@ -92,7 +92,6 @@ static struct hfp_module hfpmod = {
         .mic_mute = 0,
         .sample_rate = 16000,
 };
-
 
 bool is_valid_out_device(pal_device_id_t id) {
     switch (id) {
@@ -283,21 +282,22 @@ static int32_t start_hfp(struct str_parms *parms __unused) {
     devices[0].config.ch_info = ch_info;
     devices[0].config.aud_fmt_id = PAL_AUDIO_FMT_PCM_S16_LE;
 
-    if (is_valid_out_device(hfpmod.preferred_dev_id[RX])) {
-        devices[1].id = hfpmod.preferred_dev_id[RX];
+    if (is_valid_out_device(hfpmod.preferred_dev[RX].id)) {
+        devices[1] = hfpmod.preferred_dev[RX];
     } else {
         devices[1].id = PAL_DEVICE_OUT_SPEAKER;
     }
+    LOG(DEBUG) << __func__ << " opening HFP TX and dev " << devices[1].id << ".";
 
     ret = pal_stream_open(&stream_attr, no_of_devices, devices, 0, NULL, NULL, 0,
                           &hfpmod.rx_stream_handle);
     if (ret != 0) {
-        LOG(ERROR) << __func__ << " HFP rx stream (BT SCO->Spkr) open failed, rc " << ret;
+        LOG(ERROR) << __func__ << " HFP rx stream (HFP TX -> output dev) open failed, rc " << ret;
         return ret;
     }
     ret = pal_stream_start(hfpmod.rx_stream_handle);
     if (ret != 0) {
-        LOG(ERROR) << __func__ << " HFP rx stream (BT SCO->Spkr) open failed, rc " << ret;
+        LOG(ERROR) << __func__ << " HFP rx stream (HFP TX -> output dev) open failed, rc " << ret;
         pal_stream_close(hfpmod.rx_stream_handle);
         return ret;
     }
@@ -322,16 +322,17 @@ static int32_t start_hfp(struct str_parms *parms __unused) {
     devices[0].config.ch_info = ch_info;
     devices[0].config.aud_fmt_id = PAL_AUDIO_FMT_PCM_S16_LE;
 
-    if (is_valid_in_device(hfpmod.preferred_dev_id[TX])) {
-        devices[1].id = hfpmod.preferred_dev_id[TX];
+    if (is_valid_in_device(hfpmod.preferred_dev[TX].id)) {
+        devices[1] = hfpmod.preferred_dev[TX];
     } else {
         devices[1].id = PAL_DEVICE_IN_SPEAKER_MIC;
     }
+    LOG(DEBUG) << __func__ << " opening HFP RX and dev " << devices[1].id << ".";
 
     ret = pal_stream_open(&stream_tx_attr, no_of_devices, devices, 0, NULL, NULL, 0,
                           &hfpmod.tx_stream_handle);
     if (ret != 0) {
-        LOG(ERROR) << __func__ << " HFP tx stream (Mic->BT SCO) open failed, rc " << ret;
+        LOG(ERROR) << __func__ << " HFP tx stream (mic->HFP RX) open failed, rc " << ret;
         pal_stream_stop(hfpmod.rx_stream_handle);
         pal_stream_close(hfpmod.rx_stream_handle);
         hfpmod.rx_stream_handle = NULL;
@@ -339,7 +340,7 @@ static int32_t start_hfp(struct str_parms *parms __unused) {
     }
     ret = pal_stream_start(hfpmod.tx_stream_handle);
     if (ret != 0) {
-        LOG(ERROR) << __func__ << " HFP tx stream (Mic->BT SCO) open failed, rc " << ret;
+        LOG(ERROR) << __func__ << " HFP tx stream (Mic->HFP RX) open failed, rc " << ret;
         pal_stream_close(hfpmod.tx_stream_handle);
         pal_stream_stop(hfpmod.rx_stream_handle);
         pal_stream_close(hfpmod.rx_stream_handle);
@@ -382,7 +383,7 @@ static int32_t stop_hfp() {
 
     pal_param_device_connection_t param_device_connection;
 
-    param_device_connection.id = PAL_DEVICE_IN_BLUETOOTH_SCO_HEADSET;
+    param_device_connection.id = hfp_dev_in;
     param_device_connection.connection_state = false;
     ret = pal_set_param(PAL_PARAM_ID_DEVICE_CONNECTION, (void *)&param_device_connection,
                         sizeof(pal_param_device_connection_t));
@@ -391,7 +392,7 @@ static int32_t stop_hfp() {
                    << param_device_connection.id << " failed";
     }
 
-    param_device_connection.id = PAL_DEVICE_OUT_BLUETOOTH_SCO;
+    param_device_connection.id = hfp_dev_out;
     param_device_connection.connection_state = false;
     ret = pal_set_param(PAL_PARAM_ID_DEVICE_CONNECTION, (void *)&param_device_connection,
                         sizeof(pal_param_device_connection_t));
@@ -399,8 +400,8 @@ static int32_t stop_hfp() {
         LOG(ERROR) << __func__ << " Set PAL_PARAM_ID_DEVICE_DISCONNECTION for  "
                    << param_device_connection.id << " failed";
     }
-    hfpmod.preferred_dev_id[RX] = PAL_DEVICE_OUT_MIN;
-    hfpmod.preferred_dev_id[TX] = PAL_DEVICE_IN_MIN;
+    memset(hfpmod.preferred_dev, 0,
+        (sizeof(hfpmod.preferred_dev)/sizeof(hfpmod.preferred_dev[0]))* sizeof(struct pal_device));
     LOG(DEBUG) << __func__ << "HFP stop end";
     return ret;
 }
@@ -427,8 +428,8 @@ void hfp_set_device(struct pal_device *devices) {
             rc = pal_stream_set_device(hfpmod.tx_stream_handle, 1, &devices[TX]);
         }
     }
-    hfpmod.preferred_dev_id[RX] = devices[RX].id;
-    hfpmod.preferred_dev_id[TX] = devices[TX].id;
+    memcpy(&(hfpmod.preferred_dev), devices,
+      (sizeof(hfpmod.preferred_dev)/sizeof(hfpmod.preferred_dev[0]))* sizeof(struct pal_device));
 
     if (rc) {
         LOG(ERROR) << __func__ << ": failed to set devices for hfp";

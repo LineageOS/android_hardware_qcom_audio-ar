@@ -320,7 +320,7 @@ class CompressPlayback : public UsecaseConfig<CompressPlayback, false /*IsPcm*/>
     int64_t getPositionInFrames(pal_stream_handle_t* palHandle);
     void onFlush();
     bool isGaplessConfigured() const noexcept { return mIsGaplessConfigured; }
-
+    int64_t getCachedFrames() { return mTotalDSPFrames; }
   protected:
     void configureDefault();
     // configure the codec info which is cached already
@@ -366,6 +366,7 @@ class PcmOffloadPlayback : public UsecaseConfig<PcmOffloadPlayback> {
 
     int64_t getPositionInFrames(pal_stream_handle_t* palHandle);
     void onFlush();
+    int64_t getCachedFrames() { return mTotalDSPFrames; }
 
   private:
     int64_t mTotalDSPFrames{0};
