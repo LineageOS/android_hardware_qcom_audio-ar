@@ -7,8 +7,6 @@ cc_library_shared {
     relative_install_path: "hw",
     vendor: true,
 
-    vintf_fragments: ["manifest_audiocorehal_default.xml"],
-
     cflags: [
         "-DBACKEND_NDK",
         "-Wall",
@@ -42,4 +40,16 @@ cc_library_shared {
         "libutils",
         "libxml2",
     ],
+
+    required: [
+        "manifest_audiocorehal_default.xml",
+    ],
+}
+
+prebuilt_etc {
+    name: "manifest_audiocorehal_default.xml",
+    src: "manifest_audiocorehal_default.xml",
+    filename_from_src: true,
+    sub_dir: "vintf/manifest",
+    vendor: true,
 }
