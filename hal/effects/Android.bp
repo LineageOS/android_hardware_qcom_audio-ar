@@ -52,8 +52,6 @@ cc_library_shared {
     relative_install_path: "hw",
     vendor: true,
 
-    vintf_fragments: ["audioeffectservice_qti.xml"],
-
     srcs: [
         "EffectConfig.cpp",
         "EffectFactory.cpp",
@@ -67,10 +65,22 @@ cc_library_shared {
     static_libs: [
         "libaudioeffecthal_base_impl_static",
     ],
+
+    required: [
+        "audioeffectservice_qti.xml"
+    ],
 }
 
 cc_library_headers {
     name: "libaudioeffectsaidlqti_headers",
     export_include_dirs: ["include"],
+    vendor: true,
+}
+
+prebuilt_etc {
+    name: "audioeffectservice_qti.xml",
+    src: "audioeffectservice_qti.xml",
+    filename_from_src: true,
+    sub_dir: "vintf/manifest",
     vendor: true,
 }
