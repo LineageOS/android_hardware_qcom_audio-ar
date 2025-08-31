@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d2cd3a7d_c5cc4e7f",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 10067
+      },
+      "writtenOn": "2025-08-31T22:32:08Z",
+      "side": 1,
+      "message": "m vendorimage works with prebuilt ahal, which for now anyone doing 8750 is forced to anyway.",
+      "revId": "5d2112b7555b178f7dff628325545dfd6abf22f8",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    }
+  ]
+}
