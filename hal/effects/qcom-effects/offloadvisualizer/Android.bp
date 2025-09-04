@@ -12,7 +12,6 @@ cc_library_shared {
 
     header_libs: [
         "libarpal_headers",
-        "libaudioutils_headers",
     ],
 
     shared_libs: [
