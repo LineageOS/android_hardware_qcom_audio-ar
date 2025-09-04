@@ -16,6 +16,24 @@
       "message": "What device hits this?",
       "revId": "99db46e3ef1834c160dcc80271c904321cdf6db0",
       "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ed914fed_b0c9b5c4",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 33843
+      },
+      "writtenOn": "2025-09-04T13:48:37Z",
+      "side": 1,
+      "message": "reamle GT 7 Pro (RMX5010) \u0026 oneplus 13 (dodge), but haven\u0027t finished building oss audio",
+      "parentUuid": "e9448b26_d68e4725",
+      "revId": "99db46e3ef1834c160dcc80271c904321cdf6db0",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
     }
   ]
 }
