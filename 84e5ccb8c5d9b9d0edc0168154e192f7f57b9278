@@ -16,6 +16,24 @@
       "message": "i don\u0027t think this will need source changes?\n\nexplicitly define some audio effect library should fix the issues",
       "revId": "84e5ccb8c5d9b9d0edc0168154e192f7f57b9278",
       "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "007b17b1_e1e7cd72",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 34682
+      },
+      "writtenOn": "2025-09-05T18:05:11Z",
+      "side": 1,
+      "message": "\u003e i don\u0027t think this will need source changes?\n\u003e \n\u003e explicitly define some audio effect library should fix the issues\n\nnevermind, i got the error (xiaomi 15 and lenovo y700 gen 4) when building oss effect libraries\n\nsystem/media/audio/include/system/audio_effects/aidl_effects_utils.h:23:10: fatal error: \u0027audio_utils/template_utils.h\u0027 file not found\n   23 | #include \u003caudio_utils/template_utils.h\u003e",
+      "parentUuid": "9b88d11c_4ec3c74c",
+      "revId": "84e5ccb8c5d9b9d0edc0168154e192f7f57b9278",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
     }
   ]
 }
