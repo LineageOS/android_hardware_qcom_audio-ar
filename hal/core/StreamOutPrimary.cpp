@@ -28,7 +28,6 @@ using aidl::android::media::audio::common::MicrophoneDynamicInfo;
 using aidl::android::media::audio::common::MicrophoneInfo;
 using aidl::android::media::audio::common::AudioLatencyMode;
 using aidl::android::media::audio::common::AudioChannelLayout;
-using aidl::android::media::audio::common::AudioMode;
 
 using ::aidl::android::hardware::audio::core::IStreamCallback;
 using ::aidl::android::hardware::audio::core::IStreamCommon;
@@ -149,15 +148,6 @@ ndk::ScopedAStatus StreamOutPrimary::reconfigureConnectedDevices() {
 }
 
 ndk::ScopedAStatus StreamOutPrimary::configureConnectedDevices_I() {
-    //skip a2dp routing if voice call is active
-    if (hasBluetoothA2dpDevice(mConnectedDevices) &&
-              (mPlatform.getCallMode() != (int)AudioMode::NORMAL)) {
-        LOG(DEBUG) << __func__ << mLogPrefix << ": removing a2dp from the connected devices";
-        mConnectedDevices.erase(std::remove_if(mConnectedDevices.begin(),
-                                mConnectedDevices.end(), isBluetoothA2dpDevice),
-                                mConnectedDevices.end());
-    }
-
     if (mConnectedDevices.empty()) {
         LOG(DEBUG) << __func__ << mLogPrefix << ": stream is not connected";
         return ndk::ScopedAStatus::ok();
@@ -569,11 +559,15 @@ void StreamOutPrimary::resume() {
 
 ::android::status_t StreamOutPrimary::refinePosition(StreamDescriptor::Reply* reply) {
 
+    int64_t cachedFrames = 0;
+
     if (mTag == Usecase::COMPRESS_OFFLOAD_PLAYBACK) {
         reply->observable.frames = std::get<CompressPlayback>(mExt).getPositionInFrames(mPalHandle);
+        cachedFrames = std::get<CompressPlayback>(mExt).getCachedFrames();
     } else if (mTag == Usecase::PCM_OFFLOAD_PLAYBACK) {
         reply->observable.frames =
                 std::get<PcmOffloadPlayback>(mExt).getPositionInFrames(mPalHandle);
+        cachedFrames = std::get<PcmOffloadPlayback>(mExt).getCachedFrames();
     } else if (mTag == Usecase::MMAP_PLAYBACK) {
         int32_t ret = std::get<MMapPlayback>(mExt).getMMapPosition(&(reply->hardware.frames),
                                                                        &(reply->hardware.timeNs));
@@ -607,8 +601,12 @@ void StreamOutPrimary::resume() {
         const auto& sampleRate = mMixPortConfig.sampleRate.value().value;
         const auto btExtraFrames = latencyMs * sampleRate / 1000;
         // Todo, Check do we want to consider this for MMAP usecase
-        reply->observable.frames = (reply->observable.frames > btExtraFrames) ?
-                                   (reply->observable.frames - btExtraFrames) : 0;
+
+        //we cache position during flush, so use that value to consider encoder latency during
+        //post flush scenarios, because AIDL has non-retrograded frames which will always be
+        //greater than latency calculated frames
+        reply->observable.frames = (reply->observable.frames > (cachedFrames + btExtraFrames)) ?
+                                   (reply->observable.frames - btExtraFrames) : cachedFrames;
         reply->latencyMs += latencyMs;
     }
     reply->observable.timeNs = ::android::uptimeNanos();

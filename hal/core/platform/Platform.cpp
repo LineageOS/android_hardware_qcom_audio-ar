@@ -1358,8 +1358,11 @@ void Platform::updateHotwordPortConfig(
             attr = (struct pal_stream_attributes *)payload->payload;
             portConfig.sampleRate =
                 Int{static_cast<int32_t>(attr->in_media_config.sample_rate)};
-            portConfig.channelMask = getChannelLayoutMaskFromChannelCount(
-                attr->in_media_config.ch_info.channels, true);
+            if (getChannelCount(portConfig.channelMask.value()) !=
+                attr->in_media_config.ch_info.channels) {
+                portConfig.channelMask = getChannelLayoutMaskFromChannelCount(
+                    attr->in_media_config.ch_info.channels, true);
+            }
         }
         free(payload);
     }
