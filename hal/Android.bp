@@ -116,7 +116,11 @@ target_board_platform_cc_library_shared {
         "libaudio_system_headers",
         "libhardware_headers",
     ] + select(soong_config_variable("qtiaudio", "ultrasound_proximity"), {
-        "true": ["libspf-headers"],
+        "true": [
+            "libacdb_headers",
+            "libarosal_headers",
+            "libspf-headers",
+        ],
         default: [],
     }),
 
