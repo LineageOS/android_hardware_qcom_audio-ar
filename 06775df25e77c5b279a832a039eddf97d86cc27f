@@ -16,6 +16,24 @@
       "message": "I95597c5ca33ab42bea0b7303ff0efa022c9302f4 got lost during the bp conversion, thus libarosal_headers is necessary.\n\nlibacdb_headers is necessary to include kvh2xml.h, idk how it worked before.",
       "revId": "06775df25e77c5b279a832a039eddf97d86cc27f",
       "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "90c3a305_40529628",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 21290
+      },
+      "writtenOn": "2025-09-27T16:02:32Z",
+      "side": 1,
+      "message": "Ah, kvh2xml.h just used to be included in libarpal_headers instead of libacdb_headers.",
+      "parentUuid": "b4b17310_6bcd2a69",
+      "revId": "06775df25e77c5b279a832a039eddf97d86cc27f",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
     }
   ]
 }
