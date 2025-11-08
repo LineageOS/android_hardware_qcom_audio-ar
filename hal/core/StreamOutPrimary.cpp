@@ -1223,12 +1223,21 @@ ndk::ScopedAStatus StreamOutPrimary::getRecommendedLatencyModes(
         std::vector<::aidl::android::media::audio::common::AudioLatencyMode>* _aidl_return) {
 
      int ret = 0;
+     bool hasBtLEDevice = hasBluetoothLEDevice(mConnectedDevices);
+     pal_device_id_t dev_id;
 
-     if (!hasBluetoothA2dpDevice(mConnectedDevices)) {
+     if (!hasBluetoothA2dpDevice(mConnectedDevices) && !hasBtLEDevice) {
          return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
      }
 
-     ret = mPlatform.getRecommendedLatencyModes(_aidl_return);
+     if(hasBtLEDevice){
+        dev_id = PAL_DEVICE_OUT_BLUETOOTH_BLE;
+     } else {
+        dev_id = PAL_DEVICE_OUT_BLUETOOTH_A2DP;
+     }
+
+     ret = mPlatform.getRecommendedLatencyModes(_aidl_return, dev_id);
+
      if (ret) ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
      return ndk::ScopedAStatus::ok();
 }
@@ -1238,12 +1247,21 @@ ndk::ScopedAStatus StreamOutPrimary::setLatencyMode(
 
     LOG(DEBUG) << __func__ << mLogPrefix << ": latency mode " << toString(in_mode);
     int ret = 0;
+    bool hasBtLEDevice = hasBluetoothLEDevice(mConnectedDevices);
+    pal_device_id_t dev_id;
 
-    if (!hasBluetoothA2dpDevice(mConnectedDevices)) {
+    if (!hasBluetoothA2dpDevice(mConnectedDevices) && !hasBtLEDevice) {
         return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
     }
 
-    ret = mPlatform.setLatencyMode((uint32_t)in_mode);
+    if(hasBtLEDevice){
+        dev_id = PAL_DEVICE_OUT_BLUETOOTH_BLE;
+    } else {
+        dev_id = PAL_DEVICE_OUT_BLUETOOTH_A2DP;
+    }
+
+    ret = mPlatform.setLatencyMode((uint32_t)in_mode, dev_id);
+
     if (ret) ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
 
     return ndk::ScopedAStatus::ok();

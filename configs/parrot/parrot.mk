@@ -162,7 +162,7 @@ PRODUCT_PACKAGES += ftm_test_config_parrot-idp-sku1-snd-card
 PRODUCT_PACKAGES += ftm_test_config_ravelin-qrd-snd-card
 PRODUCT_PACKAGES += ftm_test_config_ravelin-idp-snd-card
 
-# Temporary commented out 
+# Temporary commented out
 #PRODUCT_PACKAGES += audioadsprpcd
 #PRODUCT_PACKAGES += vendor.qti.audio-adsprpc-service.rc
 
@@ -183,6 +183,14 @@ PRODUCT_PACKAGES += IDP_parrot_sku1_acdb_cal.acdb
 PRODUCT_PACKAGES += IDP_parrot_sku1_workspaceFileXml.qwsp
 PRODUCT_PACKAGES += QRD_parrot_sku1_acdb_cal.acdb
 PRODUCT_PACKAGES += QRD_parrot_sku1_workspaceFileXml.qwsp
+PRODUCT_PACKAGES += IDP_parrotlite_acdb_cal.acdb
+PRODUCT_PACKAGES += IDP_parrotlite_workspaceFileXml.qwsp
+PRODUCT_PACKAGES += IDP_parrotlite_idp_sku1_acdb_cal.acdb
+PRODUCT_PACKAGES += IDP_parrotlite_idp_sku1_workspaceFileXml.qwsp
+PRODUCT_PACKAGES += IDP_parrotlite_qrd_acdb_cal.acdb
+PRODUCT_PACKAGES += IDP_parrotlite_qrd_workspaceFileXml.qwsp
+PRODUCT_PACKAGES += IDP_parrotlite_qrd_sku1_acdb_cal.acdb
+PRODUCT_PACKAGES += IDP_parrotlite_qrd_sku1_workspaceFileXml.qwsp
 PRODUCT_PACKAGES += IDP_UPD_acdb_cal.acdb
 PRODUCT_PACKAGES += IDP_UPD_workspaceFileXml.qwsp
 PRODUCT_PACKAGES += fai__2.3.0_0.1__3.0.0_0.0__eai_1.10.pmd
@@ -191,10 +199,21 @@ PRODUCT_PACKAGES += fai__2.0.0_0.1__3.0.0_0.0__eai_1.36_enpu2.pmd
 PRODUCT_PACKAGES += fai__2.7.2_0.0__3.0.0_0.0__eai_1.36_enpu2.pmd
 PRODUCT_PACKAGES += fai__2.7.20_0.0__3.0.0_0.0__eai_1.36_enpu2.pmd
 PRODUCT_PACKAGES += fai__3.0.0_0.0__eai_1.36_enpu2.pmd
+PRODUCT_PACKAGES += fai__2.9.5_0.0__3.0.0_0.0__3.1.2_0.0__3.2.0_0.1__eai_1.43_enpuv2.pmd
+PRODUCT_PACKAGES += fai__4.8.13_0.0__3.0.0_0.0__3.1.2_0.0__3.2.0_0.1__eai_1.43_enpuv2.pmd
+PRODUCT_PACKAGES += fai__2.11.1_0.0__3.0.0_0.0__3.1.2_0.0__3.2.0_0.1__eai_1.43_enpuv2.pmd
+PRODUCT_PACKAGES += fai__4.6.1_0.0__3.0.0_0.0__3.1.2_0.0__3.2.0_0.1__eai_1.43_enpuv2.pmd
+PRODUCT_PACKAGES += fai__4.6.3_0.0__3.0.0_0.0__3.1.2_0.0__3.2.0_0.1__eai_1.43_enpuv2.pmd
+PRODUCT_PACKAGES += fai__4.14.0_0.0__3.0.0_0.0__3.1.2_0.0__3.2.0_0.1__eai_1.43_enpuv2.pmd
+PRODUCT_PACKAGES += fai__4.16.0_0.0__3.0.0_0.0__3.1.2_0.0__3.2.0_0.1__eai_1.43_enpuv2.pmd
+PRODUCT_PACKAGES += fai__4.5.1_0.0__3.0.0_0.0__3.1.2_0.0__3.2.0_0.1__eai_1.43_enpuv2.pmd
 PRODUCT_PACKAGES += libfmpal
 PRODUCT_PACKAGES += event.eai
 PRODUCT_PACKAGES += music.eai
 PRODUCT_PACKAGES += speech.eai
+PRODUCT_PACKAGES += event_nonenpu.eai
+PRODUCT_PACKAGES += music_nonenpu.eai
+PRODUCT_PACKAGES += speech_nonenpu.eai
 PRODUCT_PACKAGES += libqtigefar
 ifeq ($(strip $(AUDIO_FEATURE_ENABLED_MCS)), true)
 PRODUCT_PACKAGES += libmcs
@@ -225,12 +244,12 @@ PRODUCT_COPY_FILES += \
     $(CONFIG_HAL_SRC_DIR)/mixer_paths_parrot_qrd.xml:$(CONFIG_SKU_OUT_DIR)/mixer_paths_parrot_qrd.xml \
     $(CONFIG_HAL_SRC_DIR)/mixer_paths_parrot_idp.xml:$(CONFIG_SKU_OUT_DIR)/mixer_paths_parrot_idp.xml \
     $(CONFIG_PAL_SRC_DIR)/resourcemanager_parrot_qrd.xml:$(CONFIG_SKU_OUT_DIR)/resourcemanager_parrot_qrd.xml \
+    $(CONFIG_PAL_SRC_DIR)/resourcemanager_parrot_qrd_sku1.xml:$(CONFIG_SKU_OUT_DIR)/resourcemanager_parrot_qrd_sku1.xml \
     $(CONFIG_PAL_SRC_DIR)/resourcemanager_parrot_idp.xml:$(CONFIG_SKU_OUT_DIR)/resourcemanager_parrot_idp.xml \
     $(CONFIG_PAL_SRC_DIR)/resourcemanager_upd.xml:$(CONFIG_SKU_OUT_DIR)/resourcemanager_upd.xml \
     $(CONFIG_HAL_SRC_DIR)/mixer_paths_parrot_qrd_sku1.xml:$(CONFIG_SKU_OUT_DIR)/mixer_paths_parrot_qrd_sku1.xml \
     $(CONFIG_HAL_SRC_DIR)/mixer_paths_parrot_idp_sku1.xml:$(CONFIG_SKU_OUT_DIR)/mixer_paths_parrot_idp_sku1.xml \
     $(CONFIG_PAL_SRC_DIR)/resourcemanager_parrot_idp_sku1.xml:$(CONFIG_SKU_OUT_DIR)/resourcemanager_parrot_idp_sku1.xml \
-    $(CONFIG_PAL_SRC_DIR)/resourcemanager_parrot_qrd_sku1.xml:$(CONFIG_SKU_OUT_DIR)/resourcemanager_parrot_qrd_sku1.xml \
     $(CONFIG_PAL_SRC_DIR)/usecaseKvManager.xml:$(TARGET_COPY_OUT_VENDOR)/etc/usecaseKvManager.xml \
     vendor/qcom/opensource/audio-hal/primary-hal/configs/common/media_codecs_vendor_audio.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_vendor_audio.xml \
     frameworks/native/data/etc/android.hardware.audio.pro.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.audio.pro.xml \
@@ -258,6 +277,42 @@ PRODUCT_COPY_FILES += \
 
 PRODUCT_COPY_FILES += \
     $(CONFIG_HAL_SRC_DIR)/vendor_audio_interfaces.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio/vendor_audio_interfaces.xml
+
+# Audio configuration xml's related to Parrotlite
+QCV_FAMILY_SKUS := parrotlite
+DEVICE_SKU := parrotlite
+
+CONFIG_SKU_OUT_DIR := $(TARGET_COPY_OUT_VENDOR)/etc/audio/sku_$(DEVICE_SKU)
+
+PRODUCT_COPY_FILES += \
+    $(CONFIG_HAL_SRC_DIR)/audio_effects.conf:$(CONFIG_SKU_OUT_DIR)/audio_effects.conf \
+    $(CONFIG_HAL_SRC_DIR)/audio_effects.xml:$(CONFIG_SKU_OUT_DIR)/audio_effects.xml \
+    $(CONFIG_HAL_SRC_DIR)/audio_effects_config.xml:$(CONFIG_SKU_OUT_DIR)/audio_effects_config.xml \
+    $(CONFIG_HAL_SRC_DIR)/mixer_paths_parrotlite_qrd.xml:$(CONFIG_SKU_OUT_DIR)/mixer_paths_parrotlite_qrd.xml \
+    $(CONFIG_HAL_SRC_DIR)/mixer_paths_parrotlite_idp.xml:$(CONFIG_SKU_OUT_DIR)/mixer_paths_parrotlite_idp.xml\
+    $(CONFIG_HAL_SRC_DIR)/mixer_paths_parrotlite_qrd_sku1.xml:$(CONFIG_SKU_OUT_DIR)/mixer_paths_parrotlite_qrd_sku1.xml \
+    $(CONFIG_HAL_SRC_DIR)/mixer_paths_parrotlite_idp_sku1.xml:$(CONFIG_SKU_OUT_DIR)/mixer_paths_parrotlite_idp_sku1.xml \
+    $(CONFIG_PAL_SRC_DIR)/resourcemanager_parrotlite_qrd.xml:$(CONFIG_SKU_OUT_DIR)/resourcemanager_parrotlite_qrd.xml \
+    $(CONFIG_PAL_SRC_DIR)/resourcemanager_parrotlite_idp.xml:$(CONFIG_SKU_OUT_DIR)/resourcemanager_parrotlite_idp.xml \
+    $(CONFIG_PAL_SRC_DIR)/resourcemanager_parrotlite_qrd_sku1.xml:$(CONFIG_SKU_OUT_DIR)/resourcemanager_parrotlite_qrd_sku1.xml \
+    $(CONFIG_PAL_SRC_DIR)/resourcemanager_parrotlite_idp_sku1.xml:$(CONFIG_SKU_OUT_DIR)/resourcemanager_parrotlite_idp_sku1.xml \
+    $(CONFIG_PAL_SRC_DIR)/resourcemanager_upd.xml:$(CONFIG_SKU_OUT_DIR)/resourcemanager_upd.xml \
+
+# Copy AudioEffects config
+PRODUCT_COPY_FILES += \
+    hardware/interfaces/audio/aidl/default/audio_effects_config.xml:$(CONFIG_SKU_OUT_DIR)/audio_effects_config_stub.xml
+
+#XML Audio configuration files
+ifneq ($(TARGET_USES_AOSP_FOR_AUDIO), true)
+PRODUCT_COPY_FILES += \
+    $(CONFIG_HAL_SRC_DIR)/audio_policy_configuration.xml:$(CONFIG_SKU_OUT_DIR)/audio_policy_configuration.xml
+
+#Audio configuration xml's common to Parrot family
+PRODUCT_COPY_FILES += \
+$(foreach DEVICE_SKU, $(QCV_FAMILY_SKUS), \
+    $(CONFIG_HAL_SRC_DIR)/audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio/sku_$(DEVICE_SKU)_qssi/audio_policy_configuration.xml)
+
+endif
 
 # Audio configuration xml's related to Parrot
 QCV_FAMILY_SKUS := ravelin
@@ -315,11 +370,6 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PROPERTY_OVERRIDES += \
     af.fast_track_multiplier=1
 
-ifneq (,$(filter userdebug eng, $(TARGET_BUILD_VARIANT)))
-PRODUCT_COPY_FILES += \
-    $(TOPDIR)vendor/qcom/opensource/audio-hal/primary-hal/configs/common/init.qti.audio.debug.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.qti.audio.debug.sh
-endif
-
 # Reduce AF standby time for playback threads (except offload)
 PRODUCT_PROPERTY_OVERRIDES += \
    ro.audio.flinger_standbytime_ms=2000
@@ -331,6 +381,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
 # period multiplier for low latency capture tracks
 PRODUCT_PROPERTY_OVERRIDES += \
     vendor.audio.ull_record_period_multiplier=2
+
+# Disable CRS calls
+PRODUCT_PROPERTY_OVERRIDES += \
+    vendor.audio.crs_call_disabled=true
 
 ##Ambisonic Capture
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -432,10 +486,6 @@ vendor.audio.flac.sw.decoder.24bit=true
 #timeout duration updates to default timeout of 5sec once the system is ready.
 PRODUCT_PROPERTY_OVERRIDES += \
 vendor.audio.hal.boot.timeout.ms=20000
-
-#split a2dp DSP supported encoder list
-PRODUCT_PROPERTY_OVERRIDES += \
-persist.vendor.bt.a2dp_offload_cap=sbc-aptx-aptxtws-aptxhd-aac-ldac
 
 # A2DP offload support
 PRODUCT_PROPERTY_OVERRIDES += \

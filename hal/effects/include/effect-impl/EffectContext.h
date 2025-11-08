@@ -15,20 +15,20 @@
  */
 
 /*
- * Changes from Qualcomm Innovation Center, Inc. are provided under the following license: 
- * Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Changes from Qualcomm Technologies, Inc. are provided under the following license:
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
 #pragma once
-#include <memory>
-#include <vector>
-
+#include <aidl/android/hardware/audio/effect/BnEffect.h>
 #include <android-base/logging.h>
 #include <fmq/AidlMessageQueue.h>
 #include <fmq/EventFlag.h>
 
-#include <aidl/android/hardware/audio/effect/BnEffect.h>
+#include <memory>
+#include <vector>
+
 #include "EffectTypes.h"
 
 using aidl::android::hardware::audio::effect::IEffect;
@@ -50,6 +50,7 @@ class EffectContext {
     virtual ~EffectContext();
 
     void setVersion(int version) { mVersion = version; }
+    void setName(std::string name) { mName = name; }
     std::shared_ptr<StatusMQ> getStatusFmq() const;
     std::shared_ptr<DataMQ> getInputDataFmq() const;
     std::shared_ptr<DataMQ> getOutputDataFmq() const;
@@ -90,6 +91,7 @@ class EffectContext {
     virtual RetCode setOffload(bool offload);
 
   protected:
+    std::string mName{};
     int mVersion = 0;
     size_t mInputFrameSize = 0;
     size_t mOutputFrameSize = 0;
@@ -105,7 +107,7 @@ class EffectContext {
     RetCode updateIOFrameSize(const Parameter::Common& common);
     RetCode notifyDataMqUpdate();
 
-    bool mOffload;
+    bool mOffload = false;
 
   private:
     // fmq and buffers

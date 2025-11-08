@@ -15,10 +15,11 @@
  */
 
 /*
- * Changes from Qualcomm Innovation Center, Inc. are provided under the following license:
- * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Changes from Qualcomm Technologies, Inc. are provided under the following license:
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
+
 
 #include <memory>
 #define LOG_TAG "AHAL_EffectContextQti"
@@ -215,6 +216,10 @@ RetCode EffectContext::setCommon(const Parameter::Common& common) {
         return RetCode::ERROR_ILLEGAL_PARAMETER;
     }
 
+    if (common.ioHandle != mCommon.ioHandle) {
+        LOG(DEBUG) << __func__ << "  " << mName << " ioHandle updated from " << mCommon.ioHandle
+                   << " to " << common.ioHandle;
+    }
     mCommon = common;
     return RetCode::SUCCESS;
 }
@@ -231,10 +236,9 @@ EventFlag* EffectContext::getStatusEventFlag() {
 RetCode EffectContext::updateIOFrameSize(const Parameter::Common& common) {
     const auto prevInputFrameSize = mInputFrameSize;
     const auto prevOutputFrameSize = mOutputFrameSize;
-    mInputFrameSize = getFrameSizeInBytes(
-            common.input.base.format, common.input.base.channelMask);
-    mOutputFrameSize = getFrameSizeInBytes(
-            common.output.base.format, common.output.base.channelMask);
+    mInputFrameSize = getFrameSizeInBytes(common.input.base.format, common.input.base.channelMask);
+    mOutputFrameSize =
+            getFrameSizeInBytes(common.output.base.format, common.output.base.channelMask);
 
     if (!mProcessData) {
         LOG(VERBOSE) << __func__ << " effect does not process data";

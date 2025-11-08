@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -7,18 +7,21 @@
 
 #include <android-base/logging.h>
 #include <android-base/thread_annotations.h>
-#include <android-base/thread_annotations.h>
+#include <system/audio_effects/effect_visualizer.h>
+
 #include <algorithm>
+#include <atomic>
 #include <memory>
 #include <thread>
 #include <unordered_map>
+
 #include "PalApi.h"
 #include "effect-impl/EffectContext.h"
 
-using aidl::android::hardware::audio::effect::Parameter;
-using aidl::android::hardware::audio::effect::CommandId;
 using aidl::android::hardware::audio::effect::Capability;
+using aidl::android::hardware::audio::effect::CommandId;
 using aidl::android::hardware::audio::effect::Descriptor;
+using aidl::android::hardware::audio::effect::Parameter;
 using aidl::android::hardware::audio::effect::Range;
 using aidl::android::hardware::audio::effect::Visualizer;
 
@@ -31,21 +34,24 @@ using aidl::android::hardware::audio::effect::Visualizer;
 #define BUFFERSIZE AUDIO_CAPTURE_PERIOD_SIZE* AUDIO_CAPTURE_CHANNEL_COUNT * sizeof(int16_t)
 
 namespace aidl::qti::effects {
+
 class VisualizerOffloadContext final : public EffectContext {
   public:
-    static const uint32_t kMaxCaptureBufSize = 65536;
-    static const uint32_t kMaxLatencyMs = 3000; // 3 seconds of latency for audio pipeline
+    static constexpr int32_t kMinCaptureBufSize = VISUALIZER_CAPTURE_SIZE_MIN;
+    static constexpr int32_t kMaxCaptureBufSize = VISUALIZER_CAPTURE_SIZE_MAX;
+    static const uint32_t kMaxLatencyMs = 3000;  // 3 seconds of latency for audio pipeline
 
     VisualizerOffloadContext(const Parameter::Common& common, bool processData);
     ~VisualizerOffloadContext();
 
     RetCode enable();
     RetCode disable();
+    virtual RetCode setOffload(bool offload) override;
     // keep all parameters and reset buffer.
     void reset();
 
-    RetCode setCaptureSamples(int captureSize);
-    int getCaptureSamples();
+    RetCode setCaptureSamples(int32_t captureSize);
+    int32_t getCaptureSamples();
     RetCode setMeasurementMode(Visualizer::MeasurementMode mode);
     Visualizer::MeasurementMode getMeasurementMode();
     RetCode setScalingMode(Visualizer::ScalingMode mode);
@@ -65,8 +71,8 @@ class VisualizerOffloadContext final : public EffectContext {
 
     struct BufferStats {
         bool mIsValid;
-        uint16_t mPeakU16; // the positive peak of the absolute value of the samples in a buffer
-        float mRmsSquared; // the average square of the samples in a buffer
+        uint16_t mPeakU16;  // the positive peak of the absolute value of the samples in a buffer
+        float mRmsSquared;  // the average square of the samples in a buffer
     };
 
     enum State {
@@ -76,6 +82,8 @@ class VisualizerOffloadContext final : public EffectContext {
     };
 
   private:
+    std::atomic<bool> mCaptureThreadRunning{false};
+
     // maximum time since last capture buffer update before resetting capture buffer. This means
     // that the framework has stopped playing audio and we must start returning silence
     static const uint32_t kMaxStallTimeMs = 1000;
@@ -87,7 +95,7 @@ class VisualizerOffloadContext final : public EffectContext {
 
     // serialize process() and parameter setting
     std::mutex mMutex;
-    Parameter::Common mCommon GUARDED_BY(mMutex);
+
     State mState GUARDED_BY(mMutex) = State::UNINITIALIZED;
     uint32_t mCaptureIdx GUARDED_BY(mMutex) = 0;
     uint32_t mLastCaptureIdx GUARDED_BY(mMutex) = 0;
@@ -96,10 +104,10 @@ class VisualizerOffloadContext final : public EffectContext {
     // capture buf with 8 bits PCM
     std::array<uint8_t, kMaxCaptureBufSize> mCaptureBuf GUARDED_BY(mMutex);
     uint32_t mDownstreamLatency GUARDED_BY(mMutex) = 0;
-    uint32_t mCaptureSamples GUARDED_BY(mMutex) = 1024;
+    int32_t mCaptureSamples GUARDED_BY(mMutex) = kMaxCaptureBufSize;
 
     // to avoid recomputing it every time a buffer is processed
-    uint32_t mChannelCount GUARDED_BY(mMutex) = 0;
+    uint8_t mChannelCount GUARDED_BY(mMutex) = 0;
     Visualizer::MeasurementMode mMeasurementMode GUARDED_BY(mMutex) =
             Visualizer::MeasurementMode::NONE;
     uint8_t mMeasurementWindowSizeInBuffers = kMeasurementWindowMaxSizeInBuffers;
@@ -110,6 +118,8 @@ class VisualizerOffloadContext final : public EffectContext {
     std::array<BufferStats, kMeasurementWindowMaxSizeInBuffers> mPastMeasurements;
     void initParams();
     uint32_t getDeltaTimeMsFromUpdatedTime_l() REQUIRES(mMutex);
+
+    std::string details();
 };
 
 class StreamProxy {
@@ -139,24 +149,4 @@ class StreamProxy {
     bool mStreamOpened = false;
 };
 
-class GlobalVisualizerSession {
-  public:
-    static GlobalVisualizerSession& getSession() {
-        static GlobalVisualizerSession instance;
-        return instance;
-    }
-    std::shared_ptr<VisualizerOffloadContext> createSession(const Parameter::Common& common,
-                                                            bool processData);
-    void releaseSession(std::shared_ptr<VisualizerOffloadContext> context);
-    void startEffect(int ioHandle);
-    void stopEffect(int ioHandle);
-
-  private:
-    GlobalVisualizerSession(){};
-    std::mutex mMutex;
-    // List of call created visualizer effects
-    std::vector<std::shared_ptr<VisualizerOffloadContext>> mCreatedEffectsList;
-    // List of active outputs
-    std::vector<int> mActiveOutputsList;
-};
-} // namespace aidl::qti::effects
+}  // namespace aidl::qti::effects

@@ -300,9 +300,10 @@ class Platform {
     }
 
     bool isOffload(const Usecase& tag) { return tag == Usecase::COMPRESS_OFFLOAD_PLAYBACK; }
-    int setLatencyMode(uint32_t mode);
+    int setLatencyMode(uint32_t mode, pal_device_id_t dev_id);
     int getRecommendedLatencyModes(
-          std::vector<::aidl::android::media::audio::common::AudioLatencyMode>* _aidl_return);
+          std::vector<::aidl::android::media::audio::common::AudioLatencyMode>* _aidl_return,
+          pal_device_id_t dev_id);
 
     void configurePalDevices(
             const ::aidl::android::media::audio::common::AudioPortConfig& mixPortConfig,

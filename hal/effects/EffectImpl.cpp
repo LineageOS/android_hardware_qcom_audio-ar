@@ -15,8 +15,8 @@
  */
 
 /*
- * Changes from Qualcomm Innovation Center, Inc. are provided under the following license:
- * Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Changes from Qualcomm Technologies, Inc. are provided under the following license:
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -68,6 +68,7 @@ ndk::ScopedAStatus EffectImpl::open(const Parameter::Common& common,
     RETURN_IF(!getInterfaceVersion(&mVersion).isOk(), EX_UNSUPPORTED_OPERATION,
               "FailedToGetInterfaceVersion");
     mImplContext->setVersion(mVersion);
+    mImplContext->setName(getEffectName());
     mEventFlag = mImplContext->getStatusEventFlag();
     mDataMqNotEmptyEf =
             mVersion >= kReopenSupportedVersion ? kEventFlagDataMqNotEmpty : kEventFlagNotEmpty;

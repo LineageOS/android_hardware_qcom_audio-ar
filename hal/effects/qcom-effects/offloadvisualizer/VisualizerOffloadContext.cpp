@@ -1,7 +1,8 @@
 /*
- * Copyright (c) 2023-2025 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
+
 #define LOG_TAG "AHAL_Effect_VisualizerContextQti"
 #include "VisualizerOffloadContext.h"
 
@@ -10,70 +11,11 @@
 #include <math.h>
 #include <system/audio.h>
 #include <time.h>
+
 #include <algorithm>
 
 namespace aidl::qti::effects {
-void GlobalVisualizerSession::startEffect(int ioHandle) {
-    std::lock_guard lg(mMutex);
-    for (auto context : mCreatedEffectsList) {
-        if (context->getIoHandle() == ioHandle) {
-            if (auto ret = context->startThreadLoop(); ret)
-                LOG(ERROR) << __func__ << " failed to start capture thread loop" << ret;
-            break;
-        }
-    }
-    mActiveOutputsList.push_back(ioHandle);
-}
 
-void GlobalVisualizerSession::stopEffect(int ioHandle) {
-    std::lock_guard lg(mMutex);
-    for (auto context : mCreatedEffectsList) {
-        if (context->getIoHandle() == ioHandle) {
-            if (auto ret = context->stopThreadLoop(); ret)
-                LOG(ERROR) << __func__ << " failed to stop capture thread loop";
-            break;
-        }
-    }
-
-    auto iter = std::find(mActiveOutputsList.begin(), mActiveOutputsList.end(), ioHandle);
-    if (iter != mActiveOutputsList.end()) mActiveOutputsList.erase(iter);
-}
-
-std::shared_ptr<VisualizerOffloadContext> GlobalVisualizerSession::createSession(
-        const Parameter::Common& common, bool processData) {
-    std::lock_guard lg(mMutex);
-    auto context = std::make_shared<VisualizerOffloadContext>(common, processData);
-    RETURN_VALUE_IF(!context, nullptr, "failedToCreateContext");
-    for (auto output : mActiveOutputsList) {
-        if (common.ioHandle == output) {
-            if (auto ret = context->startThreadLoop(); ret)
-                LOG(ERROR) << __func__ << " failed to start capture thread loop";
-            break;
-        }
-    }
-    mCreatedEffectsList.push_back(context);
-    return context;
-}
-
-void GlobalVisualizerSession::releaseSession(std::shared_ptr<VisualizerOffloadContext> context) {
-    std::lock_guard lg(mMutex);
-    if (context) {
-        context->disable();
-        context->resetBuffer();
-        for (auto output : mActiveOutputsList) {
-            if (context->getIoHandle() == output) {
-                if (auto ret = context->stopThreadLoop(); ret)
-                    LOG(ERROR) << __func__ << " failed to stop capture thread loop";
-                break;
-            }
-        }
-    }
-    auto iter = std::find(mCreatedEffectsList.begin(), mCreatedEffectsList.end(), context);
-    if (iter != mCreatedEffectsList.end())
-        mCreatedEffectsList.erase(iter);
-    else
-        LOG(ERROR) << __func__ << " context is not present";
-}
 StreamProxy::StreamProxy() {
     init();
 }
@@ -163,66 +105,107 @@ bool StreamProxy::isStreamStarted() {
     return mStreamStarted;
 }
 
+std::string VisualizerOffloadContext::details() {
+    std::ostringstream os;
+    os << " ";
+    os << this;
+    os << " offload ";
+    os << mOffload;
+    os << " session ";
+    os << getSessionId();
+    os << " ioHandle ";
+    os << getIoHandle();
+    return os.str();
+}
+
+// Note: The thread loop is started upon receiving the setOffload(true) command.
+// At this time, ioHandle might not point to the offload ioHandle.
+// After setOffload, the FWK should update the parameters via setParameter,
+// which would set ioHandle to the offload ioHandle.
+// Therefore, it is possible to start the thread loop with a non-offload handle,
+// which will be updated later.
+// However, the actual ioHandle is not a concern here; we only need the offload indication
+// to determine when the effect needs to be started.
 int VisualizerOffloadContext::startThreadLoop() {
     std::lock_guard lg(mMutex);
+    // we shouldn't run into this, should not get twice
+    if (mCaptureThreadRunning.load()) {
+        LOG(DEBUG) << __func__ << " thread is already running" << details();
+        return -1;
+    }
+    LOG(DEBUG) << __func__ << details();
     mCaptureThreadHandler = std::thread(&VisualizerOffloadContext::captureThreadLoop, this);
     if (!mCaptureThreadHandler.joinable()) {
-        LOG(ERROR) << __func__ << "failed to create captureThreadLoop";
+        LOG(ERROR) << __func__ << "failed to create captureThreadLoop" << details();
         return -EINVAL;
     }
+    mCaptureThreadRunning.store(true);
     mExitThread = false;
     mCaptureThreadCondition.notify_one();
     return 0;
 }
 
 int VisualizerOffloadContext::stopThreadLoop() {
-    if (mCaptureThreadHandler.joinable()) {
-        {
-            std::lock_guard lg(mMutex);
-            mExitThread = true;
-        }
-        mCaptureThreadCondition.notify_one();
-        mCaptureThreadHandler.join();
-        LOG(DEBUG) << __func__ << " capture thread joined";
+    // not an error if thread is not running
+    if (!mCaptureThreadRunning.load()) {
+        LOG(VERBOSE) << __func__ << " thread is not running " << details();
+        return -1;
     }
+
+    LOG(DEBUG) << __func__ << details();
+    {
+        std::lock_guard lg(mMutex);
+        mExitThread = true;
+    }
+
+    mCaptureThreadCondition.notify_one();
+
+    if (mCaptureThreadHandler.joinable()) {
+        mCaptureThreadHandler.join();
+        LOG(DEBUG) << __func__ << " capture thread joined " << details();
+    }
+    mCaptureThreadRunning.store(false);
     return 0;
 }
 
 void VisualizerOffloadContext::captureThreadLoop() {
+    LOG(INFO) << __func__ << " entering threadloop " << details();
     int status = 0;
     bool captureEnabled = false;
     StreamProxy streamProxy;
 
-    if (!streamProxy.isStreamStarted()) return;
-    LOG(INFO) << __func__ << " entering threadloop ";
+    if (!streamProxy.isStreamStarted()) {
+        LOG(ERROR) << __func__ << " failed to start proxy stream, exit " << details();
+        return;
+    }
 
     while (true) {
         {
             std::unique_lock<std::mutex> lck(mMutex);
-            LOG(VERBOSE) << __func__ << " waiting for active state";
+            //LOG(VERBOSE) << __func__ << " waiting for active state" << details();
             mCaptureThreadCondition.wait(lck,
                                          [this] { return mState == State::ACTIVE || mExitThread; });
-            LOG(VERBOSE) << __func__ << " done waiting for active state";
+            //LOG(VERBOSE) << __func__ << " done waiting for active state" << details();
 
             if (mExitThread) {
-                LOG(INFO) << __func__ << " Exiting threadloop";
+                LOG(INFO) << __func__ << " Exiting threadloop" << details();
                 break;
             }
         }
         process(streamProxy.read());
     }
 
-    LOG(DEBUG) << __func__ << " completed threadloop";
+    LOG(DEBUG) << __func__ << " completed threadloop" << details();
 }
 
 VisualizerOffloadContext::VisualizerOffloadContext(
         const aidl::android::hardware::audio::effect::Parameter::Common& common, bool processData)
     : EffectContext(common, processData) {
     std::lock_guard lg(mMutex);
-    LOG(DEBUG) << __func__ << " ioHandle " << getIoHandle();
+    LOG(DEBUG) << __func__ << details();
     if (common.input != common.output) {
         LOG(ERROR) << __func__ << " mismatch input: " << common.input.toString()
-                   << " and output: " << common.output.toString();
+                   << " and output: " << common.output.toString() << details();
     }
     mState = State::INITIALIZED;
     auto channelCount = getChannelCount(common.input.base.channelMask);
@@ -230,7 +213,7 @@ VisualizerOffloadContext::VisualizerOffloadContext(
 }
 
 VisualizerOffloadContext::~VisualizerOffloadContext() {
-    LOG(DEBUG) << __func__ << " ioHandle " << getIoHandle();
+    LOG(DEBUG) << __func__ << details();
     {
         std::lock_guard lg(mMutex);
         mState = State::UNINITIALIZED;
@@ -238,8 +221,26 @@ VisualizerOffloadContext::~VisualizerOffloadContext() {
     stopThreadLoop();
 }
 
+// When setOffload is set true ->FWK is starting a offload thread
+// start the capture thread to read data.
+// When setOffload is set false ->FWK is stopping a offload thread
+// stop the capture thread to read data.
+RetCode VisualizerOffloadContext::setOffload(bool offload) {
+    if (offload != mOffload) {
+        mOffload = offload;
+        LOG(DEBUG) << __func__ << " changed to " << offload << details();
+        if (offload) {
+            startThreadLoop();
+        } else {
+            stopThreadLoop();
+        }
+    }
+
+    return RetCode::SUCCESS;
+}
+
 RetCode VisualizerOffloadContext::enable() {
-    LOG(DEBUG) << __func__ << " ioHandle " << getIoHandle();
+    LOG(DEBUG) << __func__ << details();
     std::lock_guard lg(mMutex);
     if (mState != State::INITIALIZED) {
         return RetCode::ERROR_EFFECT_LIB_ERROR;
@@ -250,7 +251,7 @@ RetCode VisualizerOffloadContext::enable() {
 }
 
 RetCode VisualizerOffloadContext::disable() {
-    LOG(DEBUG) << __func__ << " ioHandle " << getIoHandle();
+    LOG(DEBUG) << __func__ << details();
     std::lock_guard lg(mMutex);
     if (mState != State::ACTIVE) {
         return RetCode::ERROR_EFFECT_LIB_ERROR;
@@ -262,7 +263,7 @@ RetCode VisualizerOffloadContext::disable() {
 
 void VisualizerOffloadContext::reset() {
     std::lock_guard lg(mMutex);
-    std::fill_n(mCaptureBuf.begin(), kMaxCaptureBufSize, 0x80);
+    std::fill(mCaptureBuf.begin(), mCaptureBuf.end(), 0x80);
 }
 
 RetCode VisualizerOffloadContext::setCaptureSamples(int samples) {
@@ -337,7 +338,8 @@ Visualizer::Measurement VisualizerOffloadContext::getMeasure() {
         // measurements aren't relevant anymore and shouldn't bias the new one)
         const uint32_t delayMs = getDeltaTimeMsFromUpdatedTime_l();
         if (delayMs > kDiscardMeasurementsTimeMs) {
-            LOG(INFO) << __func__ << " Discarding " << delayMs << " ms old measurements";
+            LOG(INFO) << __func__ << " Discarding " << delayMs << " ms old measurements "
+                      << details();
             for (uint32_t i = 0; i < mMeasurementWindowSizeInBuffers; i++) {
                 mPastMeasurements[i].mIsValid = false;
                 mPastMeasurements[i].mPeakU16 = 0;
@@ -365,47 +367,57 @@ Visualizer::Measurement VisualizerOffloadContext::getMeasure() {
     measure.rms = (rms < 0.000016f) ? -9600 : (int32_t)(2000 * log10(rms / 32767.0f));
     measure.peak = (peakU16 == 0) ? -9600 : (int32_t)(2000 * log10(peakU16 / 32767.0f));
     LOG(DEBUG) << __func__ << " peak " << peakU16 << " (" << measure.peak << "mB), rms " << rms
-               << " (" << measure.rms << "mB)";
+               << " (" << measure.rms << "mB)" << details();
     return measure;
 }
 
 std::vector<uint8_t> VisualizerOffloadContext::capture() {
-    std::vector<uint8_t> result;
+    uint32_t captureSamples = mCaptureSamples;
+    std::vector<uint8_t> result(captureSamples, 0x80);
     std::lock_guard lg(mMutex);
     if (mState != State::ACTIVE) {
-        result.resize(mCaptureSamples);
-        memset(result.data(), 0x80, mCaptureSamples);
         return result;
     }
-    int32_t latencyMs = mDownstreamLatency;
-    const int32_t deltaMs = getDeltaTimeMsFromUpdatedTime_l();
+
+    const uint32_t deltaMs = getDeltaTimeMsFromUpdatedTime_l();
     // if audio framework has stopped playing audio although the effect is still active we must
     // clear the capture buffer to return silence
     if ((mLastCaptureIdx == mCaptureIdx) && (mBufferUpdateTime.tv_sec != 0) &&
         (deltaMs > kMaxStallTimeMs)) {
-        LOG(DEBUG) << __func__ << " capture going to idle";
+        LOG(DEBUG) << __func__ << " capture going to idle" << details();
         mBufferUpdateTime.tv_sec = 0;
         return result;
     }
-    __builtin_sub_overflow((int32_t)latencyMs, deltaMs, &latencyMs);
-    if (latencyMs < 0) latencyMs = 0;
-    uint32_t deltaSamples = mCommon.input.base.sampleRate * latencyMs / 1000;
-    int64_t capturePoint = mCaptureIdx;
-    capturePoint -= mCaptureSamples;
-    capturePoint -= deltaSamples;
-    int64_t captureSize = mCaptureSamples;
+    int32_t latencyMs = mDownstreamLatency;
+    latencyMs -= deltaMs;
+    if (latencyMs < 0) {
+        latencyMs = 0;
+    }
+    uint32_t deltaSamples = captureSamples + mCommon.input.base.sampleRate * latencyMs / 1000;
+
+    // large sample rate, latency, or capture size, could cause overflow.
+    // do not offset more than the size of buffer.
+    if (deltaSamples > kMaxCaptureBufSize) {
+        // android_errorWriteLog(0x534e4554, "31781965");
+        deltaSamples = kMaxCaptureBufSize;
+    }
+
+    int32_t capturePoint;
+    __builtin_sub_overflow((int32_t)mCaptureIdx, deltaSamples, &capturePoint);
+    // a negative capturePoint means we wrap the buffer.
     if (capturePoint < 0) {
-        int64_t size = -capturePoint;
-        if (size > captureSize) {
-            size = captureSize;
+        uint32_t size = -capturePoint;
+        if (size > captureSamples) {
+            size = captureSamples;
         }
-        result.insert(result.end(), &mCaptureBuf[kMaxCaptureBufSize + capturePoint],
-                      &mCaptureBuf[kMaxCaptureBufSize + capturePoint + size]);
-        captureSize -= size;
+        std::copy(std::begin(mCaptureBuf) + kMaxCaptureBufSize - size,
+                  std::begin(mCaptureBuf) + kMaxCaptureBufSize, result.begin());
+        captureSamples -= size;
         capturePoint = 0;
     }
-    result.insert(result.end(), &mCaptureBuf[capturePoint],
-                  &mCaptureBuf[capturePoint + captureSize]);
+    std::copy(std::begin(mCaptureBuf) + capturePoint,
+              std::begin(mCaptureBuf) + capturePoint + captureSamples,
+              result.begin() + mCaptureSamples - captureSamples);
     mLastCaptureIdx = mCaptureIdx;
     return result;
 }
@@ -413,66 +425,75 @@ std::vector<uint8_t> VisualizerOffloadContext::capture() {
 int VisualizerOffloadContext::process(int16_t* inBuffer) {
     if (!inBuffer || mState != State::ACTIVE) return -EINVAL;
 
+    int samples = AUDIO_CAPTURE_PERIOD_SIZE * mChannelCount;
     // perform measurements if needed
     if (mMeasurementMode == Visualizer::MeasurementMode::PEAK_RMS) {
         // find the peak and RMS squared for the new buffer
         float rmsSqAcc = 0;
-        int16_t maxSample = 0;
-        for (size_t inIdx = 0; inIdx < AUDIO_CAPTURE_PERIOD_SIZE * mChannelCount; ++inIdx) {
-            if (inBuffer[inIdx] > maxSample) {
-                maxSample = inBuffer[inIdx];
-            } else if (-inBuffer[inIdx] > maxSample) {
-                maxSample = -inBuffer[inIdx];
-            }
-            rmsSqAcc += inBuffer[inIdx] * inBuffer[inIdx];
+        float maxSample = 0.f;
+        float sample = 0.f;
+        for (size_t inIdx = 0; inIdx < (unsigned)samples; ++inIdx) {
+            sample = float_from_i16(inBuffer[inIdx]);
+            maxSample = fmax(maxSample, fabs(sample));
+            rmsSqAcc += sample * sample;
         }
-        mPastMeasurements[mMeasurementBufferIdx] = {
-                .mPeakU16 = (uint16_t)maxSample,
-                .mRmsSquared = rmsSqAcc / (AUDIO_CAPTURE_PERIOD_SIZE * mChannelCount),
-                .mIsValid = true};
+        maxSample *= 1 << 15;  // scale to int16_t, with exactly 1 << 15 representing positive num.
+        rmsSqAcc *= 1 << 30;   // scale to int16_t * 2
+
+        mPastMeasurements[mMeasurementBufferIdx] = {.mIsValid = true,
+                                                    .mPeakU16 = (uint16_t)maxSample,
+                                                    .mRmsSquared = rmsSqAcc / samples};
         if (++mMeasurementBufferIdx >= mMeasurementWindowSizeInBuffers) {
             mMeasurementBufferIdx = 0;
         }
     }
-    /* all code below assumes stereo 16 bit PCM output and input */
-    int32_t shift;
+
+    float fscale;  // multiplicative scale
     if (mScalingMode == Visualizer::ScalingMode::NORMALIZED) {
-        /* derive capture scaling factor from peak value in current buffer
-         * this gives more interesting captures for display. */
-        shift = 32;
-        int len = AUDIO_CAPTURE_PERIOD_SIZE * 2;
-        for (int idx = 0; idx < len; idx++) {
-            int32_t smp = inBuffer[idx];
-            if (smp < 0) smp = -smp - 1; /* take care to keep the max negative in range */
-            int32_t clz = __builtin_clz(smp);
-            if (shift > clz) shift = clz;
+        // derive capture scaling factor from peak value in current buffer
+        // this gives more interesting captures for display.
+        float maxSample = 0.f;
+        for (size_t inIdx = 0; inIdx < (unsigned)samples;) {
+            // we reconstruct the actual summed value to ensure proper normalization
+            // for multichannel outputs (channels > 2 may often be 0).
+            float smp = 0.f;
+            for (int i = 0; i < mChannelCount; ++i) {
+                smp += float_from_i16(inBuffer[inIdx++]);
+            }
+            maxSample = fmax(maxSample, fabs(smp));
         }
-        /* A maximum amplitude signal will have 17 leading zeros, which we want to
-         * translate to a shift of 8 (for converting 16 bit to 8 bit) */
-        shift = 25 - shift;
-        /* Never scale by less than 8 to avoid returning unaltered PCM signal. */
-        if (shift < 3) {
-            shift = 3;
+        if (maxSample > 0.f) {
+            fscale = 0.99f / maxSample;
+            int exp;  // unused
+            const float significand = frexp(fscale, &exp);
+            if (significand == 0.5f) {
+                fscale *= 255.f / 256.f;  // avoid returning unaltered PCM signal
+            }
+        } else {
+            // scale doesn't matter, the values are all 0.
+            fscale = 1.f;
         }
-        /* add one to combine the division by 2 needed after summing
-         * left and right channels below */
-        shift++;
     } else {
         assert(mScalingMode == Visualizer::ScalingMode::AS_PLAYED);
         // Note: if channels are uncorrelated, 1/sqrt(N) could be used at the risk of clipping.
-        shift = 9;
+        fscale = 1.f / mChannelCount;  // account for summing all the channels together.
     }
+
     uint32_t captIdx;
     uint32_t inIdx;
-    for (inIdx = 0, captIdx = mCaptureIdx; inIdx < AUDIO_CAPTURE_PERIOD_SIZE; inIdx++, captIdx++) {
+    for (inIdx = 0, captIdx = mCaptureIdx; inIdx < (unsigned)samples; captIdx++) {
         // wrap
         if (captIdx >= kMaxCaptureBufSize) {
             captIdx = 0;
         }
-        int32_t smp = inBuffer[2 * inIdx] + inBuffer[2 * inIdx + 1];
-        smp = smp >> shift;
-        mCaptureBuf[captIdx] = ((uint8_t)smp) ^ 0x80;
+
+        float smp = 0.f;
+        for (uint32_t i = 0; i < mChannelCount; ++i) {
+            smp += float_from_i16(inBuffer[inIdx++]);
+        }
+        mCaptureBuf[captIdx] = clamp8_from_float(smp * fscale);
     }
+
     // the following two should really be atomic, though it probably doesn't
     // matter much for visualization purposes
     mCaptureIdx = captIdx;
@@ -480,10 +501,8 @@ int VisualizerOffloadContext::process(int16_t* inBuffer) {
     if (clock_gettime(CLOCK_MONOTONIC, &mBufferUpdateTime) < 0) {
         mBufferUpdateTime.tv_sec = 0;
     }
-    if (mState != State::ACTIVE) {
-        LOG(DEBUG) << __func__ << "DONE inactive";
-        return -ENODATA;
-    }
+
     return 0;
 }
-} // namespace aidl::qti::effects
+
+}  // namespace aidl::qti::effects

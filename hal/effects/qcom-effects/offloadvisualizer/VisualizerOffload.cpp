@@ -1,31 +1,29 @@
 /*
- * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
+
 #define LOG_TAG "AHAL_Effect_VisualizerQti"
 #include "VisualizerOffload.h"
+
 #include <android-base/logging.h>
+
 #include "VisualizerOffloadContext.h"
 
-using aidl::android::hardware::audio::effect::Descriptor;
 using aidl::android::hardware::audio::effect::Capability;
-using aidl::android::hardware::audio::effect::Range;
-using aidl::android::hardware::audio::effect::IEffect;
+using aidl::android::hardware::audio::effect::Descriptor;
 using aidl::android::hardware::audio::effect::Flags;
-using aidl::qti::effects::VisualizerOffload;
-using aidl::qti::effects::VisualizerOffloadContext;
-using aidl::qti::effects::GlobalVisualizerSession;
-using aidl::qti::effects::kVisualizerOffloadQtiUUID;
+using aidl::android::hardware::audio::effect::IEffect;
+using aidl::android::hardware::audio::effect::Range;
 using aidl::android::hardware::audio::effect::State;
 using aidl::android::media::audio::common::AudioUuid;
+using aidl::qti::effects::kVisualizerOffloadQtiUUID;
+using aidl::qti::effects::VisualizerOffload;
+using aidl::qti::effects::VisualizerOffloadContext;
 
-extern "C" void startEffect(int ioHandle, uint64_t* palHandle __unused) {
-    GlobalVisualizerSession::getSession().startEffect(ioHandle);
-}
+extern "C" void startEffect(int ioHandle __unused, uint64_t* palHandle __unused) {}
 
-extern "C" void stopEffect(int ioHandle) {
-    GlobalVisualizerSession::getSession().stopEffect(ioHandle);
-}
+extern "C" void stopEffect(int ioHandle __unused) {}
 
 extern "C" binder_exception_t createEffect(const AudioUuid* in_impl_uuid,
                                            std::shared_ptr<IEffect>* instanceSpp) {
@@ -57,10 +55,11 @@ extern "C" binder_exception_t queryEffect(const AudioUuid* in_impl_uuid, Descrip
 }
 
 namespace aidl::qti::effects {
-const std::string VisualizerOffload::kEffectName = "Visualizer";
+const std::string VisualizerOffload::kEffectName = "VisualizerQti";
 const std::vector<Range::VisualizerRange> VisualizerOffload::kRanges = {
         MAKE_RANGE(Visualizer, latencyMs, 0, VisualizerOffloadContext::kMaxLatencyMs),
-        MAKE_RANGE(Visualizer, captureSamples, 0, VisualizerOffloadContext::kMaxCaptureBufSize),
+        MAKE_RANGE(Visualizer, captureSamples, VisualizerOffloadContext::kMinCaptureBufSize,
+                   VisualizerOffloadContext::kMaxCaptureBufSize),
         /* get only parameters, set invalid range (min > max) to indicate not support set */
         MAKE_RANGE(Visualizer, measurement, Visualizer::Measurement({.peak = 1, .rms = 1}),
                    Visualizer::Measurement({.peak = 0, .rms = 0})),
@@ -77,17 +76,22 @@ const Descriptor VisualizerOffload::kDescriptor = {
                    .name = VisualizerOffload::kEffectName,
                    .implementor = "Qualcomm Technologies Inc."},
         .capability = VisualizerOffload::kCapability};
+
 ndk::ScopedAStatus VisualizerOffload::getDescriptor(Descriptor* _aidl_return) {
     RETURN_IF(!_aidl_return, EX_ILLEGAL_ARGUMENT, "Parameter:nullptr");
-    LOG(DEBUG) << __func__ << kDescriptor.toString();
+    LOG(VERBOSE) << __func__ << kDescriptor.toString();
     *_aidl_return = kDescriptor;
     return ndk::ScopedAStatus::ok();
 }
 
 VisualizerOffload::VisualizerOffload() {
-    LOG(VERBOSE) << __func__;
+    LOG(DEBUG) << __func__ << " " << this;
     mDescriptor = &kDescriptor;
     mEffectName = &kEffectName;
+}
+
+VisualizerOffload::~VisualizerOffload() {
+    LOG(DEBUG) << __func__ << " " << this;
 }
 
 ndk::ScopedAStatus VisualizerOffload::commandImpl(CommandId command) {
@@ -218,20 +222,19 @@ ndk::ScopedAStatus VisualizerOffload::getParameterVisualizer(const Visualizer::T
 std::shared_ptr<EffectContext> VisualizerOffload::createContext(const Parameter::Common& common,
                                                                 bool processData) {
     if (mContext)
-        LOG(DEBUG) << __func__ << " context already exist";
+        LOG(DEBUG) << __func__ << " context already exist " << this;
     else {
-        // GlobalVisualizerSession is a singleton
-        mContext = GlobalVisualizerSession::getSession().createSession(common, processData);
+        mContext = std::make_shared<VisualizerOffloadContext>(common, processData);
     }
     return mContext;
 }
 
 RetCode VisualizerOffload::releaseContext() {
     if (mContext) {
-        GlobalVisualizerSession::getSession().releaseSession(mContext);
-        mContext.reset();
+        mContext->disable();
+        mContext->resetBuffer();
     }
     return RetCode::SUCCESS;
 }
 
-} // namespace aidl::qti::effects
+}  // namespace aidl::qti::effects
