@@ -3628,7 +3628,7 @@
         <ctl name="LPI Enable" value="1" />
         <ctl name="VA_AIF1_CAP Mixer DEC0" value="1" />
         <ctl name="VA DEC0 MUX" value="SWR_MIC" />
-        <ctl name="VA SMIC MUX0" value="SWR_MIC1" />
+        <ctl name="VA SMIC MUX0" value="SWR_MIC5" />
         <ctl name="ADC2 ChMap" value="SWRM_TX2_CH2" />
         <ctl name="ADC2_MIXER Switch" value="1" />
         <ctl name="ADC2 MUX" value="INP2" />
