@@ -17,6 +17,7 @@ cc_binary {
         ],
 
     shared_libs: [
+        "android.media.audio.core_V2_to_V3-ndk",
         "libcutils",
         "libbinder",
         "libbinder_ndk",
