@@ -19,6 +19,7 @@ cc_defaults {
     header_libs: [
         "libaudioeffectsaidlqti_headers",
         "libaudio_system_headers",
+        "libaudioutils_headers",
         "libsystem_headers",
     ],
     cflags: [
