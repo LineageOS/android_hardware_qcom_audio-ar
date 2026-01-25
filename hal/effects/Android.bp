@@ -1,7 +1,8 @@
 cc_defaults {
     name: "aidlaudioeffectserviceqti_defaults",
     defaults: [
-        "latest_android_hardware_audio_effect_ndk_shared"
+        "latest_android_hardware_audio_effect_ndk_shared",
+        "latest_android_media_audio_common_types_ndk_shared",
     ],
     vendor: true,
 
