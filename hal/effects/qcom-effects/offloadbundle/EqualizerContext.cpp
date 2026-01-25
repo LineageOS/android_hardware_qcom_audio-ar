@@ -110,7 +110,7 @@ bool EqualizerContext::isBandLevelIndexInRange(
     const auto[min, max] =
             std::minmax_element(bandLevels.begin(), bandLevels.end(),
                                 [](const auto& a, const auto& b) { return a.index < b.index; });
-    return min->index >= 0 && max->index < MAX_NUM_BANDS;
+    return min->index >= 0 && max->index < static_cast<int32_t>(MAX_NUM_BANDS);
 }
 
 RetCode EqualizerContext::setEqualizerBandLevels(
@@ -164,7 +164,7 @@ std::vector<int32_t> EqualizerContext::getEqualizerCenterFreqs() {
 }
 
 void EqualizerContext::updateOffloadParameters() {
-    for (int i = 0; i < MAX_NUM_BANDS; i++) {
+    for (size_t i = 0; i < MAX_NUM_BANDS; i++) {
         mEqParams.config.presetId = mCurrentPreset;
         mEqParams.bandConfig[i].bandIndex = i;
         mEqParams.bandConfig[i].filterType = EQ_BAND_BOOST;
