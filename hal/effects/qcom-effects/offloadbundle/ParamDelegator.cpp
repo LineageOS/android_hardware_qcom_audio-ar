@@ -241,7 +241,7 @@ int ParamDelegator::updatePalParameters(pal_stream_handle_t *handle, struct Equa
         customPayload->data[index++] = eq->config.pregain;
         customPayload->data[index++] = CUSTOM_OPENSL_PRESET;
         customPayload->data[index++] = eq->config.numBands;
-        for (int i = 0; i < eq->config.numBands; i++) {
+        for (uint32_t i = 0; i < eq->config.numBands; i++) {
             LOG(VERBOSE) << __func__ << " band " << i << " filter " << eq->bandConfig[i].filterType
                          << " frequency " << eq->bandConfig[i].frequencyMhz << " gain "
                          << eq->bandConfig[i].gainMb << " quality factor "
