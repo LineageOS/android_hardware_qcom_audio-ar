@@ -1066,7 +1066,7 @@ static void out_update_source_metadata_v7(
         struct playback_track_metadata_v7* track = source_metadata->tracks;
         astream_out->tracks.resize(track_count);
 
-        AHAL_DBG("track count is %d for usecase(%d: %s)",track_count,
+        AHAL_DBG("track count is %zd for usecase(%d: %s)",track_count,
             astream_out->GetUseCase(), use_case_table[astream_out->GetUseCase()]);
 
         astream_out->btSourceMetadata.track_count = track_count;
@@ -1500,7 +1500,7 @@ static void in_update_sink_metadata_v7(
             audio_mode_t mode;
             bool voice_active = false;
             bool voice_mode_active = false;
-            AHAL_DBG("track count is %d for usecase (%d: %s)", track_count,
+            AHAL_DBG("track count is %zd for usecase (%d: %s)", track_count,
                 astream_in->GetUseCase(), use_case_table[astream_in->GetUseCase()]);
 
             /* When BLE gets connected, adev_input_stream opens from mixports capabilities. In this
@@ -2760,7 +2760,7 @@ exit:
             AHAL_INFO("mmap position is %d", position.position_frames);
             signed_frames = position.position_frames -
               (MMAP_PLATFORM_DELAY * (streamAttributes_.out_media_config.sample_rate) / 1000000LL);
-            AHAL_INFO("mmap signed frames %llu", signed_frames);
+            AHAL_INFO("mmap signed frames %lu", signed_frames);
         }
     }
 
@@ -3431,7 +3431,7 @@ ssize_t StreamOutPrimary::splitAndWriteAudioHapticsStream(const void *buffer, si
 
 ssize_t StreamOutPrimary::onWriteError(size_t bytes, ssize_t ret) {
     // standby streams upon write failures and sleep for buffer duration.
-    AHAL_ERR("write error %d usecase(%d: %s)", ret, GetUseCase(), use_case_table[GetUseCase()]);
+    AHAL_ERR("write error %zd usecase(%d: %s)", ret, GetUseCase(), use_case_table[GetUseCase()]);
     Standby();
 
     if (streamAttributes_.type != PAL_STREAM_COMPRESSED) {
@@ -3471,7 +3471,7 @@ ssize_t StreamOutPrimary::configurePalOutputStream() {
         ATRACE_BEGIN("hal: pal_stream_start");
         ret = pal_stream_start(pal_stream_handle_);
         if (ret) {
-            AHAL_ERR("failed to start stream. ret=%d", ret);
+            AHAL_ERR("failed to start stream. ret=%zd", ret);
             pal_stream_close(pal_stream_handle_);
             pal_stream_handle_ = NULL;
             ATRACE_END();
@@ -3492,7 +3492,7 @@ ssize_t StreamOutPrimary::configurePalOutputStream() {
         if (usecase_ == USECASE_AUDIO_PLAYBACK_WITH_HAPTICS) {
             ret = pal_stream_start(pal_haptics_stream_handle);
             if (ret) {
-                AHAL_ERR("failed to start haptics stream. ret=%d", ret);
+                AHAL_ERR("failed to start haptics stream. ret=%zd", ret);
                 ATRACE_END();
                 pal_stream_close(pal_haptics_stream_handle);
                 pal_haptics_stream_handle = NULL;
@@ -3502,7 +3502,7 @@ ssize_t StreamOutPrimary::configurePalOutputStream() {
         if (karaoke) {
             ret = AudExtn.karaoke_start();
             if (ret) {
-                AHAL_ERR("failed to start karaoke stream. ret=%d", ret);
+                AHAL_ERR("failed to start karaoke stream. ret=%zd", ret);
                 AudExtn.karaoke_close();
                 karaoke = false;
                 ret = 0; // Not fatal error
@@ -3531,7 +3531,7 @@ ssize_t StreamOutPrimary::configurePalOutputStream() {
                                        PAL_PARAM_ID_CODEC_CONFIGURATION,
                                        param_payload);
             if (ret) {
-                AHAL_INFO("Pal Set Param for codec configuration failed (%x)", ret);
+                AHAL_INFO("Pal Set Param for codec configuration failed (%zx)", ret);
                 ret = 0;
             }
             free(param_payload);
@@ -3558,7 +3558,7 @@ ssize_t StreamOutPrimary::configurePalOutputStream() {
                                        PAL_PARAM_ID_GAPLESS_MDATA,
                                        param_payload);
             if (ret) {
-                AHAL_INFO("PAL set param for gapless failed, error (%x)", ret);
+                AHAL_INFO("PAL set param for gapless failed, error (%zx)", ret);
                 ret = 0;
             }
             free(param_payload);
@@ -3632,7 +3632,7 @@ ssize_t StreamOutPrimary::write(const void *buffer, size_t bytes)
                      return -EINVAL;
                  }
                  usleep((uint64_t)bytes * 1000000 / frameSize / sampleRate);
-                 AHAL_VERBOSE("BLE suspended; dropped ringtone buffer size - %d", bytes);
+                 AHAL_VERBOSE("BLE suspended; dropped ringtone buffer size - %zu", bytes);
                  goto exit;
             }
         }
@@ -5053,7 +5053,7 @@ int StreamInPrimary::SetMicMute(bool mute) {
 
 ssize_t StreamInPrimary::onReadError(size_t bytes, size_t ret) {
     // standby streams upon read failures and sleep for buffer duration.
-    AHAL_ERR("read failed %d usecase(%d: %s)", ret, GetUseCase(), use_case_table[GetUseCase()]);
+    AHAL_ERR("read failed %zu usecase(%d: %s)", ret, GetUseCase(), use_case_table[GetUseCase()]);
     Standby();
     uint32_t byteWidth = streamAttributes_.in_media_config.bit_width / 8;
     uint32_t sampleRate = streamAttributes_.in_media_config.sample_rate;
@@ -5127,7 +5127,7 @@ ssize_t StreamInPrimary::read(const void *buffer, size_t bytes) {
         AutoPerfLock perfLock;
         ret = pal_stream_start(pal_stream_handle_);
         if (ret) {
-            AHAL_ERR("failed to start stream. ret=%d", ret);
+            AHAL_ERR("failed to start stream. ret=%zd", ret);
             pal_stream_close(pal_stream_handle_);
             pal_stream_handle_ = NULL;
             goto exit;
@@ -5137,7 +5137,7 @@ ssize_t StreamInPrimary::read(const void *buffer, size_t bytes) {
         if (volume_) {
             ret = pal_stream_set_volume(pal_stream_handle_, volume_);
             if (ret) {
-                AHAL_ERR("Pal Stream volume Error (%x)", ret);
+                AHAL_ERR("Pal Stream volume Error (%zx)", ret);
             }
         }
         /*apply cached mic mute*/
@@ -5160,7 +5160,7 @@ ssize_t StreamInPrimary::read(const void *buffer, size_t bytes) {
     }
 
     ret = pal_stream_read(pal_stream_handle_, &palBuffer);
-    AHAL_VERBOSE("received size= %d",palBuffer.size);
+    AHAL_VERBOSE("received size= %zu",palBuffer.size);
     if (usecase_ == USECASE_AUDIO_RECORD_COMPRESS && ret > 0) {
         size = palBuffer.size;
         mCompressReadCalls++;
@@ -5182,7 +5182,7 @@ exit:
     stream_mutex_.unlock();
     clock_gettime(CLOCK_MONOTONIC, &readAt);
     if (usecase_ == USECASE_AUDIO_RECORD_COMPRESS && ret <= 0) {
-        AHAL_ERR("read failure for compress capture: %d", ret);
+        AHAL_ERR("read failure for compress capture: %zd", ret);
         return -ENODEV;
     }
     AHAL_VERBOSE("Exit: returning size: %zu size ", size);
