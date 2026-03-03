@@ -10,7 +10,7 @@ cc_library_shared {
     vendor: true,
 
     vintf_fragments: select(soong_config_variable("ANDROID", "target_board_platform"), {
-        "sun": ["configs/sun/manifest_audio_qti_services.xml"],
+        "parrot": ["configs/parrot/manifest_audio_qti_services.xml"],
         default: [],
     }),
 
