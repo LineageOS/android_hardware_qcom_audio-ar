@@ -15,8 +15,8 @@
  */
 
 /*
- * ​​​​​Changes from Qualcomm Innovation Center are provided under the following license:
- * Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Changes from Qualcomm Technologies, Inc. are provided under the following license:
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -133,6 +133,9 @@ class ModulePrimary final : public Module {
         HDR,
         WFD,
         FTM, // Factory Test Mode
+#if defined(AUDIO_FEATURE_ENABLED_MIC_OCCLUSION)
+        MICOCCLUSION,
+#endif
         AUDIOEXTENSION,
         HAPTICS,
     };
@@ -205,6 +208,10 @@ class ModulePrimary final : public Module {
     // GetHandler for FTM
     std::vector<::aidl::android::hardware::audio::core::VendorParameter> onGetFTMParameters(
             const std::vector<std::string>&);
+#if defined(AUDIO_FEATURE_ENABLED_MIC_OCCLUSION)
+    std::vector<::aidl::android::hardware::audio::core::VendorParameter> onGetMicOcclusionParameters(
+            const std::vector<std::string>&);
+#endif
     std::vector<::aidl::android::hardware::audio::core::VendorParameter> onGetAudioExtnParams(
             const std::vector<std::string>&);
     std::vector<::aidl::android::hardware::audio::core::VendorParameter> onGetBluetoothParams(

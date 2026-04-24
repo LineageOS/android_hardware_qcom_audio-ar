@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Changes from Qualcomm Technologies, Inc. are provided under the following license:
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -463,5 +464,23 @@ std::string PlatformConverter::toString() noexcept {
     os << "### platform conversion end ###" << std::endl;
     return os.str();
 }
+
+#if defined(AUDIO_FEATURE_ENABLED_MIC_OCCLUSION)
+std::string PlatformConverter::getAudioDeviceDescForPalDevId(pal_device_id_t deviceID) {
+    std::ostringstream os;
+    LOG(VERBOSE) << __func__ << "deviceID is = "<< deviceID;
+    for (const auto& [key, value] : kAidlToPalDeviceMap) {
+        if (value == deviceID) {
+            os << key.toString() << " => " << deviceNameLUT.at(value) << std::endl;
+            // Return just the AudioDeviceDescription string
+            LOG(VERBOSE) << __func__ << "key.toString()"<< key.toString();
+            return key.toString();
+        }
+    }
+    // If not found, return a default string
+    LOG(VERBOSE) << __func__ << " no matching AudioDeviceDescription found for deviceID: " << deviceID;
+    return "Unknown AudioDeviceDescription";
+}
+#endif
 
 } // namespace qti::audio

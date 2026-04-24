@@ -15,8 +15,8 @@
  */
 
 /*
- * Changes from Qualcomm Innovation Center, Inc. are provided under the following license:
- * Copyright (c) 2023-2025 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Changes from Qualcomm Technologies, Inc. are provided under the following license:
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -720,6 +720,9 @@ ModulePrimary::SetParameterToFeatureMap ModulePrimary::fillSetParameterToFeature
                                  {Parameters::kFbspValiWaitTime, Feature::FTM},
                                  {Parameters::kFbspValiValiTime, Feature::FTM},
                                  {Parameters::kTriggerSpeakerCall, Feature::FTM},
+#if defined(AUDIO_FEATURE_ENABLED_MIC_OCCLUSION)
+                                 {Parameters::kMicOcclusionParam, Feature::MICOCCLUSION},
+#endif
                                  {Parameters::kWfdChannelMap, Feature::WFD},
                                  {Parameters::kWfdIPAsProxyDevConnected, Feature::WFD},
                                  {Parameters::kProxyRecordFMQSize, Feature::WFD},
@@ -984,6 +987,32 @@ std::vector<VendorParameter> ModulePrimary::onGetFTMParameters(
     return results;
 }
 
+#if defined(AUDIO_FEATURE_ENABLED_MIC_OCCLUSION)
+std::vector<VendorParameter> ModulePrimary::onGetMicOcclusionParameters(
+        const std::vector<std::string>& ids) {
+    std::vector<VendorParameter> results{};
+    // Only valid IDs are added to results; unknown IDs are logged and skipped.
+    for (const auto& id : ids) {
+        if (id == Parameters::kMicOcclusionParam) {
+            VendorParameter param;
+            VString parcel;
+            param.id = id;
+            const auto& micocclsionresult = mPlatform.getMicocclusionparameter();
+            if (micocclsionresult) {
+                parcel.value = micocclsionresult.value();
+            } else {
+                parcel.value = "false";
+            }
+            setParameter(parcel, param);
+            results.push_back(param);
+        } else {
+            LOG(ERROR) << __func__ << ": unknown parameter in MicOcclusion feature. id:" << id;
+        }
+    }
+    return results;
+}
+#endif
+
 // static
 ModulePrimary::GetParameterToFeatureMap ModulePrimary::fillGetParameterToFeatureMap() {
     GetParameterToFeatureMap map{{Parameters::kHdrRecord, Feature::HDR},
@@ -1001,6 +1030,9 @@ ModulePrimary::GetParameterToFeatureMap ModulePrimary::fillGetParameterToFeature
                                  {Parameters::kWfdIPAsProxyDevConnected, Feature::WFD},
                                  {Parameters::kFTMParam, Feature::FTM},
                                  {Parameters::kFTMSPKRParam, Feature::FTM},
+#if defined(AUDIO_FEATURE_ENABLED_MIC_OCCLUSION)
+                                 {Parameters::kMicOcclusionParam, Feature::MICOCCLUSION},
+#endif
                                  {Parameters::kFMStatus, Feature::AUDIOEXTENSION}};
     return map;
 }
@@ -1013,6 +1045,9 @@ ModulePrimary::FeatureToGetHandlerMap ModulePrimary::fillFeatureToGetHandlerMap(
                                {Feature::WFD, &ModulePrimary::onGetWFDParameters},
                                {Feature::FTM, &ModulePrimary::onGetFTMParameters},
                                {Feature::AUDIOEXTENSION, &ModulePrimary::onGetAudioExtnParams},
+#if defined(AUDIO_FEATURE_ENABLED_MIC_OCCLUSION)
+                               {Feature::MICOCCLUSION, &ModulePrimary::onGetMicOcclusionParameters},
+#endif
                                {Feature::GENERIC, &ModulePrimary::onGetGenericParams}};
     return map;
 }

@@ -394,6 +394,11 @@ void Telephony::onExternalDeviceConnectionChanged(const AudioDevice& extDevice,
                                                   const bool& connect) {
     std::scoped_lock lock{mLock};
     // Placeholder for telephony to act upon external device connection
+    if(connect){
+        mExternalDevices.push_back(extDevice);
+    } else {
+        std::erase(mExternalDevices, extDevice);
+    }
     if (isBluetoothSCODevice(extDevice) || isBluetoothA2dpDevice(extDevice)) {
         LOG(VERBOSE) << __func__ << ": sco/a2dp no change";
         return;
@@ -509,7 +514,24 @@ void Telephony::updateCrsDevice() {
     }
 }
 
+
+
 AudioDevice Telephony::getMatchingTxDevice(const AudioDevice& rxDevice) {
+    auto getComplementDeviceIfAny =
+            [&](const AudioDeviceDescription& desc) -> std::optional<AudioDevice> {
+        auto itr =
+                std::find_if(mExternalDevices.begin(), mExternalDevices.end(), [&](const auto& d) {
+                    if (d.type.connection == desc.connection && d.type.type == desc.type) {
+                        return true;
+                    }
+                    return false;
+                });
+        if (itr != mExternalDevices.end()) {
+            return *itr;
+        }
+        return std::nullopt;
+    };
+
     if (rxDevice.type.type == AudioDeviceType::OUT_SPEAKER_EARPIECE) {
         return AudioDevice{.type.type = AudioDeviceType::IN_MICROPHONE};
     } else if (rxDevice.type.type == AudioDeviceType::OUT_SPEAKER) {
@@ -525,15 +547,33 @@ AudioDevice Telephony::getMatchingTxDevice(const AudioDevice& rxDevice) {
     } else if (rxDevice.type.type == AudioDeviceType::OUT_DEVICE &&
                rxDevice.type.connection == AudioDeviceDescription::CONNECTION_ANALOG) {
         return AudioDevice{.type.type = AudioDeviceType::IN_MICROPHONE};
-    } else if ((rxDevice.type.type == AudioDeviceType::OUT_DEVICE ||
-                rxDevice.type.type == AudioDeviceType::OUT_HEADSET) &&
+    } else if (rxDevice.type.type == AudioDeviceType::OUT_DEVICE &&
                rxDevice.type.connection == AudioDeviceDescription::CONNECTION_BT_SCO) {
-        return AudioDevice{.type.type = AudioDeviceType::IN_HEADSET,
-                           .type.connection = AudioDeviceDescription::CONNECTION_BT_SCO};
+        auto found = getComplementDeviceIfAny(
+                AudioDeviceDescription{.type = AudioDeviceType::IN_DEVICE,
+                                       .connection = AudioDeviceDescription::CONNECTION_BT_SCO});
+        if (found) {
+            return found.value();
+        }
+        return AudioDevice{.type.type = AudioDeviceType::IN_MICROPHONE};
+    } else if (rxDevice.type.type == AudioDeviceType::OUT_HEADSET &&
+               rxDevice.type.connection == AudioDeviceDescription::CONNECTION_BT_SCO) {
+        auto found = getComplementDeviceIfAny(
+                AudioDeviceDescription{.type = AudioDeviceType::IN_HEADSET,
+                                       .connection = AudioDeviceDescription::CONNECTION_BT_SCO});
+        if (found) {
+            return found.value();
+        }
+        return AudioDevice{.type.type = AudioDeviceType::IN_MICROPHONE};
     } else if (rxDevice.type.type == AudioDeviceType::OUT_HEADSET &&
                rxDevice.type.connection == AudioDeviceDescription::CONNECTION_BT_LE) {
-        return AudioDevice{.type.type = AudioDeviceType::IN_HEADSET,
-                           .type.connection = AudioDeviceDescription::CONNECTION_BT_LE};
+        auto found = getComplementDeviceIfAny(
+                AudioDeviceDescription{.type = AudioDeviceType::IN_HEADSET,
+                                       .connection = AudioDeviceDescription::CONNECTION_BT_LE});
+        if (found) {
+            return found.value();
+        }
+        return AudioDevice{.type.type = AudioDeviceType::IN_MICROPHONE};
     } else if (rxDevice.type.type == AudioDeviceType::OUT_CARKIT &&
                rxDevice.type.connection == AudioDeviceDescription::CONNECTION_BT_SCO) {
         return AudioDevice{.type.type = AudioDeviceType::IN_HEADSET,

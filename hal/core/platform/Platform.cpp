@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2023-2025 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Changes from Qualcomm Technologies, Inc. are provided under the following license:
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -21,7 +22,6 @@
 #include <dlfcn.h>
 #include <extensions/AudioExtension.h>
 #include <unistd.h>
-
 #define LC3_SWB_CODEC_CONFIG_INDEX 4
 #define LC3_BROADCAST_TRANSIT_MODE 1
 #define LC3_HFP_TRANSIT_MODE 3
@@ -728,6 +728,48 @@ std::optional<std::string> Platform::getSpeakerCalibrationResult() const noexcep
     }
     return std::string(calValue, dataSize);
 }
+
+#if defined(AUDIO_FEATURE_ENABLED_MIC_OCCLUSION)
+std::optional<std::string> Platform::getMicocclusionparameter() const noexcept {
+    void *micInfo = nullptr;
+    size_t dataSize = 0;
+    // pal_get_param allocates memory for micInfo only on success (ret == 0)
+    // If ret != 0 or dataSize <= 0, no memory is allocated and no leak risk exists
+    if (int32_t ret = ::pal_get_param(PAL_PARAM_ID_MIC_OCCLUSION_INFO, &micInfo, &dataSize, nullptr);
+        (ret || dataSize <= 0)) {
+        LOG(ERROR) << __func__ << "occlusion: PAL_PARAM_ID_MIC_OCCLUSION_INFO failed, ret:" << ret
+                   << ", data size:" << dataSize;
+        return std::nullopt;
+    }
+    // Use unique_ptr for automatic cleanup
+    std::unique_ptr<std::vector<std::vector<pal_param_mic_occlusion_info_t>>> micInfoVecPtr(static_cast<std::vector<std::vector<pal_param_mic_occlusion_info_t>>*>(micInfo));
+    std::string micOccInfoReply;
+
+    for (const auto& innerVector : *micInfoVecPtr) {
+        micOccInfoReply += "{Device:";
+        micOccInfoReply += PlatformConverter::getAudioDeviceDescForPalDevId(innerVector[0].id);
+        micOccInfoReply += ",Mics:[";
+        for (size_t j = 0; j < innerVector.size(); ++j) {
+            micOccInfoReply += "{MicType:";
+            micOccInfoReply += (j == 0) ? "PrimaryMic" : "SecondaryMic";
+            micOccInfoReply += ",is_cur_occluded:";
+            micOccInfoReply += std::to_string(innerVector[j].is_occluded);
+            micOccInfoReply += ",num_of_occlusions:";
+            micOccInfoReply += std::to_string(innerVector[j].num_of_occlusion);
+            micOccInfoReply += ",num_of_recovery:";
+            micOccInfoReply += std::to_string(innerVector[j].num_of_recovery);
+            micOccInfoReply += "}";
+            if (j + 1 < innerVector.size()) micOccInfoReply += ",";
+        }
+        micOccInfoReply += "]}";
+
+    }
+
+    LOG(DEBUG) << __func__ << " micInfo : " << micOccInfoReply;
+
+    return micOccInfoReply;
+}
+#endif
 
 void Platform::updateScreenRotation(const IModule::ScreenRotation in_rotation) noexcept {
     pal_param_device_rotation_t paramDeviceRotation{};

@@ -120,7 +120,7 @@ class OffloadBundleContext : public EffectContext {
   protected:
     std::mutex mMutex;
     const OffloadBundleEffectType mType;
-    pal_stream_handle_t* mPalHandle;
+    pal_stream_handle_t* mPalHandle = nullptr;
     EffectState mState = EffectState::UNINITIALIZED;
     bool isEffectActive() { return mState == EffectState::ACTIVE; }
 };

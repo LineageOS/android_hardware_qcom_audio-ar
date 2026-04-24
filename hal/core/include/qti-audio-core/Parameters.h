@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Changes from Qualcomm Technologies, Inc. are provided under the following license:
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -88,6 +89,9 @@ const static std::string kOffloadPlaySpeedSupported{"offloadVariableRateSupporte
 const static std::string kSupportsHwSuspend{"supports_hw_suspend"};
 const static std::string kIsDirectPCMTrack{"is_direct_pcm_track"};
 const static std::string kTranslateRecord{"translate_record"};
+#if defined(AUDIO_FEATURE_ENABLED_MIC_OCCLUSION)
+const static std::string kMicOcclusionParam{"mic_occlusion_info"};
+#endif
 /**
  * translate_record : AUDIO_FLUENCE_FFECNS PCM_RECORD
  * Use this parameter to for the Voice Translation usecase.

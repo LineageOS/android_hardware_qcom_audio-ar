@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Changes from Qualcomm Technologies, Inc. are provided under the following license:
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -52,5 +53,8 @@ class PlatformConverter {
 
     static std::unique_ptr<pal_channel_info> getPalChannelInfoForChannelCount(int count) noexcept;
     static std::string toString() noexcept;
+#if defined(AUDIO_FEATURE_ENABLED_MIC_OCCLUSION)
+    static std::string getAudioDeviceDescForPalDevId(pal_device_id_t deviceID);
+#endif
 };
 } // namespace qti::audio
