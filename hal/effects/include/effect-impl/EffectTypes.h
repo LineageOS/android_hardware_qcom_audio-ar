@@ -172,6 +172,11 @@ constexpr size_t getChannelCount(
             return __builtin_popcount(layout.get<Tag::layoutMask>() & mask);
         case Tag::voiceMask:
             return __builtin_popcount(layout.get<Tag::voiceMask>() & mask);
+        case Tag::acnMask:
+            // acnMask specifies channel count.
+            return layout.get<Tag::acnMask>() &
+                   ::aidl::android::media::audio::common::AudioChannelLayout::
+                           ACN_CHANNEL_COUNT_BIT_MASK;
     }
     return 0;
 }
