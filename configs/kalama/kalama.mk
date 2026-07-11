@@ -124,6 +124,7 @@ PRODUCT_PACKAGES += fai__4.8.21_4.0__3.0.0_0.0__3.1.2_0.0__3.2.0_0.1__eai_2.25_e
 PRODUCT_PACKAGES += fai__4.8.21_5.0__3.0.0_0.0__3.1.2_0.0__3.2.0_0.1__eai_2.25_enpuv3.pmd
 PRODUCT_PACKAGES += fai__4.8.21_6.0__3.0.0_0.0__3.1.2_0.0__3.2.0_0.1__eai_2.25_enpuv3.pmd
 PRODUCT_PACKAGES += fai__4.8.21_7.0__3.0.0_0.0__3.1.2_0.0__3.2.0_0.1__eai_2.25_enpuv3.pmd
+PRODUCT_PACKAGES += fai__4.8.1.58_1.0__3.0.0_0.0__3.1.2_0.0__3.2.0_0.1__eai_2.25_enpuv3.pmd
 
 # Audio configuration xml's related to Kailua
 QCV_FAMILY_SKUS := kalama

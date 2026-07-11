@@ -26,8 +26,8 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * Changes from Qualcomm Innovation Center are provided under the following license:
- * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * ​​​​​Changes from Qualcomm Technologies, Inc. are provided under the following license:
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -60,7 +60,12 @@ using android::sp;
 using namespace android::hardware;
 using android::OK;
 #endif
-
+#ifdef PALEVENTNOTIFIER_HIDL_ENABLED
+#include <pal_server_notify.h>
+#include <vendor/qti/hardware/paleventnotifier/1.0/IPALEventNotifier.h>
+using vendor::qti::hardware::paleventnotifier::V1_0::IPALEventNotifier;
+using vendor::qti::hardware::paleventnotifier::V1_0::implementation::PALEventNotifier;
+#endif
 #ifdef __LP64__
 #define LIBS "/vendor/lib64/"
 #else
@@ -794,6 +799,18 @@ int AudioExtn::audio_extn_hidl_init() {
     } else {
         AHAL_DBG("successfully registered PAL service");
     }
+#endif
+
+#ifdef PALEVENTNOTIFIER_HIDL_ENABLED
+    /* regitser notify PAL EVENT NOTIFIER HIDL */
+    sp<IPALEventNotifier> notify_pal_service = new PALEventNotifier();
+    if(android::OK !=  notify_pal_service->registerAsService()) {
+        AHAL_ERR("Could not register PALEventNotifier service");
+        return -EINVAL;
+    } else {
+        AHAL_DBG("successfully registered PALEventNotifier service");
+    }
+
 #endif
 
 #ifdef AGM_HIDL_ENABLED
