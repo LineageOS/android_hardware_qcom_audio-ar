@@ -28,7 +28,7 @@
  *
  * Changes from Qualcomm Innovation Center are provided under the following license:
  *
- * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -351,10 +351,14 @@ int AudioVoice::VoiceSetParameters(const char *kvpairs) {
                 }
                 if (ret != 0) {
                     AHAL_ERR("Failed to set mute err:%d", ret);
+                    free(params);
+                    params = nullptr;
                     ret = -EINVAL;
                     goto done;
                 }
             }
+            free(params);
+            params = nullptr;
         }
     }
     err = str_parms_get_str(parms, AUDIO_PARAMETER_KEY_HAC, c_value, sizeof(c_value));

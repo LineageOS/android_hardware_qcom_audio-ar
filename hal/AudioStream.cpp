@@ -26,9 +26,8 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * Changes from Qualcomm Innovation Center, Inc. are provided under the following license:
- *
- * Copyright (c) 2022-2024, Qualcomm Innovation Center, Inc. All rights reserved.
+ * Changes from Qualcomm Technologies, Inc. are provided under the following license:
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -2157,7 +2156,7 @@ int StreamOutPrimary::GetMmapPosition(struct audio_mmap_position *position)
     if (pal_stream_handle_ == nullptr) {
         AHAL_ERR("error pal handle is null\n");
         stream_mutex_.unlock();
-        return -EINVAL;
+        return -EAGAIN;
     }
 
     ret = pal_stream_get_mmap_position(pal_stream_handle_, &pal_mmap_pos);
@@ -4536,7 +4535,7 @@ int StreamInPrimary::GetMmapPosition(struct audio_mmap_position *position)
     if (pal_stream_handle_ == nullptr) {
         AHAL_ERR("error pal handle is null\n");
         stream_mutex_.unlock();
-        return -EINVAL;
+        return -EAGAIN;
     }
 
     ret = pal_stream_get_mmap_position(pal_stream_handle_, &pal_mmap_pos);
