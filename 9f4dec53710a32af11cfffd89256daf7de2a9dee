@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "65280ea3_dd73f673",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 19665
+      },
+      "writtenOn": "2026-08-02T21:07:04Z",
+      "side": 1,
+      "message": "This change is present in lineage-23.2-caf-sm8550 and lineage-23.2-caf-sm8650 but not lineage-23.2-caf-sm8450 for whatever reason. Just like the commit message says, this log line is in fact flooding my logcat, and it\u0027s best to bring this change over here too.",
+      "revId": "9f4dec53710a32af11cfffd89256daf7de2a9dee",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    }
+  ]
+}
