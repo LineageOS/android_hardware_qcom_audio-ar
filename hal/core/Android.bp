@@ -11,6 +11,7 @@ cc_library_shared {
 
     vintf_fragments: select(soong_config_variable("ANDROID", "target_board_platform"), {
         "parrot": ["configs/parrot/manifest_audio_qti_services.xml"],
+        "taro": ["configs/parrot/manifest_audio_qti_services.xml"],
         default: [],
     }),
 
