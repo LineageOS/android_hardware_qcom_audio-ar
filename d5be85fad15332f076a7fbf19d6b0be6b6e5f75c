@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b5bf80ab_373679a2",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 10067
+      },
+      "writtenOn": "2026-09-10T10:27:49Z",
+      "side": 1,
+      "message": "manifest_audio_qti_services isn\u0027t installed anymore.",
+      "revId": "d5be85fad15332f076a7fbf19d6b0be6b6e5f75c",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    }
+  ]
+}
