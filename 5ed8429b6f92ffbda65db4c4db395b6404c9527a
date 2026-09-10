@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b224e500_fc36a870",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 10067
+      },
+      "writtenOn": "2026-09-10T09:29:30Z",
+      "side": 1,
+      "message": "technically fastrpc is now oss, but i don\u0027t see libfastrpc_vendor_headers there\n\nhttps://git.codelinaro.org/clo/la/platform/vendor/qcom-opensource/fastrpc",
+      "revId": "5ed8429b6f92ffbda65db4c4db395b6404c9527a",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    }
+  ]
+}
