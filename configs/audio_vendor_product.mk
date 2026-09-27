@@ -67,3 +67,13 @@ $(call add_soong_config_var_value,vendor_audio_hwasan_config,use_hwasan,true)
 else
 $(call add_soong_config_var_value,vendor_audio_hwasan_config,use_hwasan,false)
 endif
+
+#----------------------------------------------------------------------
+# audio specific
+#----------------------------------------------------------------------
+
+# C2 compilation is disabled by default.
+# for target specific enablement, set it to true in the target specific .mk file.
+TARGET_USES_VENDOR_C2_AUDIO_HAL := false
+$(warning "C2 audio compilation disabled by default")
+

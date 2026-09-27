@@ -803,8 +803,10 @@ int32_t StreamOutPrimary::setAggregateSourceMetadata(bool voiceActive) {
         return 0;
     }
     auto removeStreams = [&](std::weak_ptr<StreamOut> streamOut) -> bool {
-        if (!streamOut.lock()) return true;
-        return streamOut.lock()->isClosed();
+         if (auto sharedStream = streamOut.lock()) {
+             return sharedStream->isClosed();
+         }
+         return true;
     };
     outStreams.erase(std::remove_if(outStreams.begin(), outStreams.end(), removeStreams),
                      outStreams.end());
