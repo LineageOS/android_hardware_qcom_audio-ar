@@ -1127,12 +1127,18 @@ void StreamOutPrimary::configure() {
     }
     auto bufConfig = getBufferConfig();
     if (mTag == Usecase::ULL_PLAYBACK) {
-        //The buffer size for ULL_PLAYBACK set to PAL should not be more than 2ms
-        const size_t durationMs = 1; // set to 1ms
-        size_t frameSizeInBytes = getFrameSizeInBytes(
-                mMixPortConfig.format.value(), mMixPortConfig.channelMask.value());
-        bufConfig.bufferSize = durationMs *
-                    (mMixPortConfig.sampleRate.value().value /1000) * frameSizeInBytes;
+        char vendor_sku[PROPERTY_VALUE_MAX] = {'\0'};
+        if (property_get("ro.boot.product.vendor.sku", vendor_sku, "") <= 0) {
+            LOG(WARNING) << __func__ << mLogPrefix << " failed to get property for the vendor_sku";
+        }
+        if (strcmp(vendor_sku, "bourtzi") != 0) {
+            //The buffer size for ULL_PLAYBACK set to PAL should not be more than 2ms
+            const size_t durationMs = 1; // set to 1ms
+            size_t frameSizeInBytes = getFrameSizeInBytes(
+                    mMixPortConfig.format.value(), mMixPortConfig.channelMask.value());
+            bufConfig.bufferSize = durationMs *
+                        (mMixPortConfig.sampleRate.value().value /1000) * frameSizeInBytes;
+        }
     }
     size_t ringBufSizeInBytes = bufConfig.bufferSize;
     const size_t ringBufCount = bufConfig.bufferCount;
