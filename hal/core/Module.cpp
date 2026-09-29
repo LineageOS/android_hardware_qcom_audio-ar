@@ -561,6 +561,12 @@ ndk::ScopedAStatus Module::prepareToDisconnectExternalDevice(int32_t in_portId) 
     return ndk::ScopedAStatus::ok();
 }
 
+ndk::ScopedAStatus Module::getFlushFromFrameSupport(
+        const ::aidl::android::media::audio::common::AudioPortConfig& in_config __unused,
+        ::aidl::android::media::audio::common::FlushFromFrameSupport* _aidl_return __unused) {
+    return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
+}
+
 ndk::ScopedAStatus Module::connectExternalDevice(const AudioPort& in_templateIdAndAdditionalData,
                                                  AudioPort* _aidl_return) {
     LOG(DEBUG) << __func__

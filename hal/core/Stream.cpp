@@ -333,6 +333,9 @@ StreamInWorkerLogic::Status StreamInWorkerLogic::cycle() {
                 populateReplyWrongState(&reply, command);
             }
             break;
+        case Tag::flushFromFrame:
+            reply.status = STATUS_INVALID_OPERATION;
+            break;
     }
     reply.state = mState;
     LOG(severity) << __func__ << ": writing reply " << reply.toString();
@@ -680,6 +683,9 @@ StreamOutWorkerLogic::Status StreamOutWorkerLogic::cycle() {
             } else {
                 populateReplyWrongState(&reply, command);
             }
+            break;
+        case Tag::flushFromFrame:
+            reply.status = STATUS_INVALID_OPERATION;
             break;
     }
     reply.state = mState;
