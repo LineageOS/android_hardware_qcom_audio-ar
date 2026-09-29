@@ -694,7 +694,7 @@ ndk::ScopedAStatus Module::connectExternalDevice(const AudioPort& in_templateIdA
                 // Check if profiles are non empty because they were populated
                 // by a previous connection. Otherwise, it means that they are
                 // not empty because the mix port has static profiles.
-                for (const auto cp : mConnectedDevicePorts) {
+                for (const auto& cp : mConnectedDevicePorts) {
                     if (cp.second.count(portsIt->id) > 0) {
                         connectedPortsIt->second.insert(portsIt->id);
                         break;
