@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2e22ca1d_5b163f23",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 10067
+      },
+      "writtenOn": "2026-10-03T18:25:37Z",
+      "side": 1,
+      "message": "```suggestion\ncore: Select parrot VINTF fragment for taro (cape|waipio)\n```",
+      "range": {
+        "startLine": 7,
+        "startChar": 26,
+        "endLine": 7,
+        "endChar": 34
+      },
+      "revId": "0bb5538e5d5e5a87116127f696938e976370ca86",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    }
+  ]
+}
