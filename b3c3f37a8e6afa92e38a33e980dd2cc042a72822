@@ -24,6 +24,30 @@
       "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
     },
     {
+      "unresolved": true,
+      "key": {
+        "uuid": "1e195c8d_052a463c",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 19979
+      },
+      "writtenOn": "2026-10-03T14:46:11Z",
+      "side": 1,
+      "message": "https://review.lineageos.org/c/LineageOS/android_hardware_qcom_audio-ar/+/493305",
+      "parentUuid": "855e6468_ca2c92bb",
+      "range": {
+        "startLine": 9,
+        "startChar": 0,
+        "endLine": 9,
+        "endChar": 51
+      },
+      "revId": "b3c3f37a8e6afa92e38a33e980dd2cc042a72822",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    },
+    {
       "unresolved": false,
       "key": {
         "uuid": "dbc13ba8_7ff572af",
