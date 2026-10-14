@@ -98,7 +98,23 @@ void Lvacfs::deinit() {
     ALOGI("LVACFS deinitialized");
 }
 
+// Values match tinyalsa's pcm_format enum in tinyalsa/asoundlib.h.
+static int lvacfs_format_from_audio_format(audio_format_t format) {
+    switch (format) {
+        case AUDIO_FORMAT_PCM_16_BIT: return 0;         // PCM_FORMAT_S16_LE
+        case AUDIO_FORMAT_PCM_32_BIT: return 1;         // PCM_FORMAT_S32_LE
+        case AUDIO_FORMAT_PCM_8_24_BIT: return 3;       // PCM_FORMAT_S24_LE
+        case AUDIO_FORMAT_PCM_24_BIT_PACKED: return 4;  // PCM_FORMAT_S24_3LE
+        default: return -1;                             // PCM_FORMAT_INVALID
+    }
+}
+
 void Lvacfs::startInputStream(StreamInPrimary* in) {
+    int format = lvacfs_format_from_audio_format(in->config_.format);
+    if (format < 0) {
+        ALOGE("Unsupported audio format: %#x", in->config_.format);
+        return;
+    }
     in->lvacfs_handle = (void**)calloc(1, sizeof(void*));
     if (!in->lvacfs_handle) {
         ALOGE("Failed to allocate lvacfs_handle");
@@ -107,8 +123,7 @@ void Lvacfs::startInputStream(StreamInPrimary* in) {
     wrapper_ops_->set_params_file_path(params_file_path_);
     int channel_count = audio_channel_count_from_in_mask(in->config_.channel_mask);
     uint32_t channels = ((channel_count & 0xFFFF) << 16) | (channel_count & 0xFFFF);
-    // Set format to false (0) since lvacfs does not support pal audio format
-    uint64_t sample_rate_and_format = ((uint64_t)0 << 32) | in->config_.sample_rate;
+    uint64_t sample_rate_and_format = ((uint64_t)format << 32) | in->config_.sample_rate;
     int ret = wrapper_ops_->create_instance(in->lvacfs_handle, in->source_, sample_rate_and_format,
                                             channels);
     if (ret < 0) {
