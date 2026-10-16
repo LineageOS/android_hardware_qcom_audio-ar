@@ -99,6 +99,18 @@ void Lvacfs::deinit() {
 }
 
 void Lvacfs::startInputStream(StreamInPrimary* in) {
+    // Match stock OplusRecordInit: these streams must not go through LVACFS
+    switch (in->streamAttributes_.type) {
+        case PAL_STREAM_COMPRESSED:
+        case PAL_STREAM_VOIP_TX:
+        case PAL_STREAM_RAW:
+        case PAL_STREAM_PROXY:
+            ALOGD("skip lvacfs for stream type %d", in->streamAttributes_.type);
+            return;
+        default:
+            break;
+    }
+
     in->lvacfs_handle = (void**)calloc(1, sizeof(void*));
     if (!in->lvacfs_handle) {
         ALOGE("Failed to allocate lvacfs_handle");
