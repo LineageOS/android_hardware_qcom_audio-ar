@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "60c1371d_ae66d5a9",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 30416
+      },
+      "writtenOn": "2026-10-16T15:23:09Z",
+      "side": 1,
+      "message": "Proposed as an alternative to I2f4c613345349207e2257b69e25a5267b0a8ae0b. When tested on ferrari, I found no breakage.",
+      "revId": "25c64ed45218ef124659047b441167051cb0cf5c",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    }
+  ]
+}
