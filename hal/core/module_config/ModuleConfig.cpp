@@ -575,6 +575,11 @@ static void populateMixPorts(const xsd::Modules::Module& module,
     }
 }
 
+static bool isA2dpOffloadEnabled() {
+    return property_get_bool("ro.bluetooth.a2dp_offload.supported", false) &&
+           !property_get_bool("persist.bluetooth.a2dp_offload.disabled", false);
+}
+
 static void populateDevicePorts(const xsd::Modules::Module& module,
                                 std::unique_ptr<ModuleConfig>& moduleConfig) {
     auto getFlags = [](const xsd::DevicePorts::DevicePort& devPort) {
@@ -615,6 +620,9 @@ static void populateDevicePorts(const xsd::Modules::Module& module,
 
         std::string connections =
                 devicePort.hasConnection() ? toString(devicePort.getConnection()) : "";
+        if (connections == AudioDeviceDescription::CONNECTION_BT_A2DP && !isA2dpOffloadEnabled()) {
+            continue;
+        }
         auto deviceExt = createDeviceExt(devType, getFlags(devicePort), getFormats(devicePort),
                                          address, connections);
         auto port = createPort(moduleConfig->nextPortId++, name, 0, isInput, deviceExt);
