@@ -37,6 +37,7 @@
 #include <cutils/properties.h>
 #include <map>
 #include <memory>
+#include <set>
 #include <unordered_map>
 #include <vector>
 
@@ -683,11 +684,40 @@ static void populateRoutes(const xsd::Modules::Module& module,
     }
 }
 
+static bool isA2dpOffloadEnabled() {
+    return property_get_bool("ro.bluetooth.a2dp_offload.supported", false) &&
+           !property_get_bool("persist.bluetooth.a2dp_offload.disabled", false);
+}
+
+static void removeA2dpDevicePorts(std::unique_ptr<ModuleConfig>& moduleConfig) {
+    std::set<int32_t> removedIds;
+    std::erase_if(moduleConfig->ports, [&](const AudioPort& port) {
+        if (port.ext.getTag() != AudioPortExt::Tag::device ||
+            port.ext.get<AudioPortExt::Tag::device>().device.type.connection !=
+                    AudioDeviceDescription::CONNECTION_BT_A2DP) {
+            return false;
+        }
+        removedIds.insert(port.id);
+        return true;
+    });
+    for (const int32_t id : removedIds) {
+        moduleConfig->mExternalDevicePortProfiles.erase(id);
+        moduleConfig->connectedProfiles.erase(id);
+    }
+    std::erase_if(moduleConfig->routes, [&](auto& route) {
+        std::erase_if(route.sourcePortIds, [&](int32_t id) { return removedIds.contains(id); });
+        return removedIds.contains(route.sinkPortId) || route.sourcePortIds.empty();
+    });
+}
+
 static std::unique_ptr<ModuleConfig> getModuleConfig(const xsd::Modules::Module& module) {
     auto moduleConfig = std::make_unique<ModuleConfig>();
     populateMixPorts(module, moduleConfig);
     populateDevicePorts(module, moduleConfig);
     populateRoutes(module, moduleConfig);
+    if (!isA2dpOffloadEnabled()) {
+        removeA2dpDevicePorts(moduleConfig);
+    }
 
     return std::move(moduleConfig);
 }
