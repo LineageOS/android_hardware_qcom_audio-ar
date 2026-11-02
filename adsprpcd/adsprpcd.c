@@ -61,7 +61,9 @@
 typedef int (*adsp_default_listener_start_t)(int argc, char *argv[]);
 
 #ifndef LINUX_ENABLED
+#ifndef ADSP_LIB_DIRECTORY_PATH
 #define ADSP_LIB_DIRECTORY_PATH "/data/vendor/audio_dsp"
+#endif
 
 static void set_adsp_lib_path()
 {
