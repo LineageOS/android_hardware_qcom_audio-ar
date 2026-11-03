@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "eb08e8ed_0847ea79",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 13648
+      },
+      "writtenOn": "2026-11-03T16:16:25Z",
+      "side": 1,
+      "message": "If this is just to avoid us extending the ADSP library from device trees, then it\u0027s pointless.",
+      "revId": "ec6806cb4b1989c1238c7836b48d3aebdc4155d4",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    }
+  ]
+}
